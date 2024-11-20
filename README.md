@@ -1,2 +1,6 @@
-# RV32i-Processor
-A single core RISC-V processor with a 5-stage pipeline and dynamic branch prediction
+# Third Year Project
+
+## RISC-V RV32i Processor Core
+
+This is a single core RISC-V base 32-bit ISA compliant processor which implements a 5-Stage pipeline with dynamic branch prediction in the form of a saturating counter and the appropriate hazard control logic.
+This was created for my third year project at the University of Manchester.

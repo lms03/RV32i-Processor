@@ -1,0 +1,6 @@
+// Simple program to test the processor, NOT EXHAUSTIVE
+
+00200093 // 0 - ADDI x1, x0, 1
+00300113 // 4 - ADDI x2, x0, 2
+002081b3 // 8 - ADD x3, x1, x2
+0000006f // 12 - JAL x0, 0
