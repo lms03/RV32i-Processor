@@ -1,24 +1,16 @@
 //////////////////////////////////////////////////////////////////////////////////                                                           
 // Third Year Project: RISC-V RV32i Pipelined Processor
-// Module: Instruction Memory                                                      
-// Description: Holds the program for the processor to execute 
-//              and outputs the instruction pointed to by the PC.                
+// Module: Adder                                           
+// Description: Generic 32bit adder for PC increment and branch address calculation.           
 // Author: Luke Shepherd                                                     
 // Date Created: November 2024                                                                                                                                                                                                                                                       
 //////////////////////////////////////////////////////////////////////////////////
 
-module instruction_memory (
-    input wire [31:0] PC_Out,
-    output reg [31:0] Instr
+module adder (
+    input wire [31:0] A,
+    input wire [31:0] B,
+    output reg [31:0] OUT
     );
 
-    reg [31:0] memory [0:255];
-
-    initial begin
-        $readmemh("src/program.hex", memory);
-    end
-
-    always @(*) begin
-        Instr = memory[PC_Out[9:2]];
-    end
+    assign OUT = A + B;
 endmodule

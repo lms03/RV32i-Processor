@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////////                                                           
 // Third Year Project: RISC-V RV32i Pipelined Processor
 // Module: Program Counter Testbench                                                      
-// Description: Tests for the program counter module.        
+// Description: Tests that the program counter outputs the correct value. 
 // Author: Luke Shepherd                                                     
 // Date Created: November 2024                                                                                                                                                                                                                                                   
 //////////////////////////////////////////////////////////////////////////////////
@@ -32,8 +32,7 @@ module program_counter_testbench ();
         .OUT(PC_In)
     );
 
-    // Generate the clock
-    always #(CLOCK_PERIOD / 2) CLK <= ~CLK;
+    always #(CLOCK_PERIOD / 2) CLK <= ~CLK; // Generate the clock
 
     initial begin
         repeat (`MAX_CYCLES) @ (posedge CLK);  // Run sim for x cycles and then terminate
