@@ -14,18 +14,20 @@ module fetch_stage_testbench ();
     reg CLK;
     reg RST;
     reg PC_En;
-    wire [31:0] PC_Out;
+    wire [31:0] PC;
     wire [31:0] PC_Plus_4;
     wire [31:0] Instr;
-
+    
     fetch fetch (
         .CLK(CLK),
         .RST(RST),
         .PC_En(PC_En),
         .Instr(Instr),
-        .PC_Out(PC_Out),
+        .PC(PC),
         .PC_Plus_4(PC_Plus_4)
     );
+
+    reg [31:0] expected_instr; // Expected instruction for verification
 
     always #(CLOCK_PERIOD / 2) CLK <= ~CLK; // Generate the clock
 
@@ -38,13 +40,18 @@ module fetch_stage_testbench ();
         // Initiliaze signals
         CLK = 0;
         RST = 1;
-        PC_In = 32'h0; 
         PC_En = 1;
-        #(CLOCK_PERIOD * 2) RST = 0; // Start test after delay for propagation and visual clarity
-        // Replace with repeats potentially.
-        #(CLOCK_PERIOD * 2) RST = 1;  // Test reset
-        #(CLOCK_PERIOD * 2) PC_En = 0;  // Test stall 
-        #(CLOCK_PERIOD * 2) PC_En = 1;
+        repeat (2) @ (posedge CLK); // Start test after delay for propagation and visual clarity
+        RST = 0; 
+
+        repeat (2) @ (posedge CLK);
+        RST = 1;  // Test reset
+
+        repeat (2) @ (posedge CLK);
+        PC_En = 0;  // Test stall 
+        
+        repeat (2) @ (posedge CLK);
+        PC_En = 1; // Test increment
     end
 
     always @ (PC) begin
