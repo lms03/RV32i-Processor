@@ -5,8 +5,6 @@
 //              Program Counter: 
 //                  Points to the next instruction to be executed.
 //                  Uses synchronous reset.        
-//              Adder:
-//                  Increments the PC.
 //              Instruction Memory:
 //                  Holds the program for the processor to execute 
 //                  and outputs the instruction pointed to by the PC.   
@@ -53,15 +51,6 @@ module program_counter (
         else if (PC_En)             
             PC_Out <= PC_In;           
     end
-endmodule
-
-module adder (
-    input wire [31:0] A,
-    input wire [31:0] B,
-    output wire [31:0] OUT
-    );
-
-    assign OUT = A + B;
 endmodule
 
 module instruction_memory (

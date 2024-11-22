@@ -40,27 +40,36 @@ module fetch_stage_testbench ();
         // Initiliaze signals
         CLK = 0;
         RST = 1;
-        PC_En = 1;
+        PC_En = 0;
         repeat (2) @ (posedge CLK); // Start test after delay for propagation and visual clarity
         RST = 0; 
-
-        repeat (2) @ (posedge CLK);
-        RST = 1;  // Test reset
-
-        repeat (2) @ (posedge CLK);
-        PC_En = 0;  // Test stall 
+        PC_En = 1;
+        repeat (4) @ (posedge CLK); // Delay to allow instructions to start being fetched
         
-        repeat (2) @ (posedge CLK);
-        PC_En = 1; // Test increment
+        RST = 1;  // Test reset
+        repeat (1) @ (posedge CLK);
+        RST = 0; 
+
+        repeat (3) @ (posedge CLK); // Allow for instructions to flow
+
+        PC_En = 0;  // Test stall (1 cycle)
+        repeat (1) @ (posedge CLK);
+        PC_En = 1; 
+
+        repeat (2) @ (posedge CLK); // Allow for instructions to flow
+
+        PC_En = 0; // Test stall (4 cycles)
+        repeat (4) @ (posedge CLK);
+        PC_En = 1; 
     end
 
-    always @ (PC) begin
+    always @ (*) begin
         case (PC[9:2])
             8'h00: expected_instr = 32'h00200093; // ADDI x1, x0, 1
             8'h01: expected_instr = 32'h00300113; // ADDI x2, x0, 2
             8'h02: expected_instr = 32'h002081b3; // ADD x3, x1, x2
             8'h03: expected_instr = 32'h0000006f; // JAL x0, 0
-            default: expected_instr = 32'h00000000; // Default to 0
+            default: expected_instr = 32'hXXXXXXXX; // Default to X
         endcase
     end
 
@@ -76,7 +85,7 @@ module fetch_stage_testbench ();
     assertPCStall: assert property (@(posedge CLK) (RST == 0 && PC_En == 0 |-> ##1 PC == $past(PC)))
         else $warning("Warning: PC did not stall correctly");
 
-    // Ensure instruction memory outputs the expected instruction
+    // Ensure instruction memory outputs the expected instruction (Test is bugged)
     assertInstrCorrect: assert property (@(posedge CLK) (Instr == expected_instr))
         else $warning("Warning: Incorrect instruction at PC = %h, expected = %h, got = %h", PC, expected_instr, Instr);
 
