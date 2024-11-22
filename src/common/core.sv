@@ -14,20 +14,17 @@ module core (
     // PC Signals
     wire [31:0] PC_In;
     wire [31:0] PC_Out;
+    wire [31:0] PC_Plus_4;
     wire PC_En;
 
-    program_counter pc (
+    fetch fetch (
         .CLK(CLK),
         .RST(RST),
         .PC_En(PC_En),
-        .PC_In(PC_In),
-        .PC_Out(PC_Out)
+        .Instr(Instr),
+        .PC_Out(PC_Out),
+        .PC_Plus_4(PC_Plus_4)
     );
 
-    // Adder to increment PC to PC+4
-    adder pc_adder (
-        .A(PC_Out),
-        .B(32'h4),
-        .OUT(PC_In)
-    );
+
 endmodule
