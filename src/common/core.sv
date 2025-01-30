@@ -3,7 +3,7 @@
 // Module: Core                                           
 // Description: Instantiates all modules and connects them together               
 // Author: Luke Shepherd                                                     
-// Date Created: November 2024                                                                                                                                                                                                                                                       
+// Date Modified: December 2024                                                                                                                                                                                                                                                           
 //////////////////////////////////////////////////////////////////////////////////
 
 module core (
@@ -21,10 +21,22 @@ module core (
         .CLK(CLK),
         .RST(RST),
         .PC_En(PC_En),
-        .Instr(Instr),
-        .PC_Out(PC_Out),
-        .PC_Plus_4(PC_Plus_4)
+        .Instr_F(Instr_F),
+        .PC_F(PC_Out),
+        .PC_Plus_4_F(PC_Plus_4)
     );
 
+    ifid_reg ifid_reg (
+        .CLK(CLK),
+        .RST(RST),
+        .Flush_D(0), //TEMPORARY, CHANGE LATER
+        .Stall_En(0), //TEMPORARY, CHANGE LATER
+        .Instr_F(Instr_F),
+        .PC_F(PC),
+        .PC_Plus_4_F(PC_Plus_4),
+        .Instr_D(Instr_D),
+        .PC_D(PC_D),
+        .PC_Plus_4_D(PC_Plus_4_D)
+    );
 
 endmodule
