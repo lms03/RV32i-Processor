@@ -27,9 +27,10 @@ module instruction_memory_testbench;
     initial begin
         $readmemh("src/program.hex", Reference); // Load the file to check with
 
-        PC_Out = 0;  // Initialize PC
+        @(posedge CLK);
+        PC_Out <= 0;  // Initialize PC
 
-        repeat (MAX_CYCLES) @ (posedge CLK); // Run some time to allow for all instructions to be read
+        repeat (`MAX_CYCLES) @ (posedge CLK); // Run some time to allow for all instructions to be read
         $stop; 
     end
 
@@ -37,7 +38,7 @@ module instruction_memory_testbench;
         PC_Out <= PC_Out + 4; // Simulate the PC incrementing normally
     end
 
-    assertInstrCorrect: assert property (@(posedge CLK) Instr === Reference[PC_Out[31:2]]) // Try adding delay before checking condition if there is a timing problem
+    assertInstrCorrect: assert property (@(posedge CLK) Instr === Reference[PC_Out[31:2]])
             else $error("Mismatch at address %h: got %h, expected %h", PC_Out, Instr, Reference[PC_Out[31:2]]);
     
 endmodule

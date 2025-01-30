@@ -9,7 +9,7 @@
 //                  Holds the program for the processor to execute 
 //                  and outputs the instruction pointed to by the PC.  
 // Author: Luke Shepherd                                                     
-// Date Modified: December 2024                                                                                                                                                                                                                                                       
+// Date Modified: January 2025                                                                                                                                                                                                                                                       
 //////////////////////////////////////////////////////////////////////////////////
 
 module fetch (
