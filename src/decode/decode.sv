@@ -24,13 +24,13 @@ module control_unit (
     input wire [6:0] OP,
     input wire [2:0] Func3,
     input wire [6:0] Func7,
-    output wire REG_W_En, MEM_W_En, Jump_En, Branch_En, 
-    output wire [2:0] MEM_Control, // Determines how much memory should be loaded/stored and how it should be extended.
-    output wire [3:0] ALU_Control, // Determines what operation the ALU should perform.
-    output wire [2:0] Imm_Type_Sel, // Determines how the immediate should be handled.
-    output wire Branch_Src_Sel, // Selects the input of the branch target calclulation (PC or Immediate) to allow JALR.
-    output wire ALU_SrcA_Sel, ALU_SrcB_Sel, // Selects the ALU inputs between registers and PC/Immediate.
-    output wire [1:0] Result_Src_Sel // Selects the source of the result, 11 is unused.
+    output logic REG_W_En, MEM_W_En, Jump_En, Branch_En, 
+    output logic [2:0] MEM_Control, // Determines how much memory should be loaded/stored and how it should be extended.
+    output logic [3:0] ALU_Control, // Determines what operation the ALU should perform.
+    output logic [2:0] Imm_Type_Sel, // Determines how the immediate should be handled.
+    output logic Branch_Src_Sel, // Selects the input of the branch target calclulation (PC or Immediate) to allow JALR.
+    output logic ALU_SrcA_Sel, ALU_SrcB_Sel, // Selects the ALU inputs between registers and PC/Immediate.
+    output logic [1:0] Result_Src_Sel // Selects the source of the result, 11 is unused.
     );
 
     always_comb begin
@@ -56,12 +56,12 @@ module control_unit (
                     ALU_SrcB_Sel = SRCB_REG; // Select register data 
                     Result_Src_Sel = RESULT_ALU; // Select ALU output
                     case (Func3)
-                        F3_R_ADD_SUB: Func7 == F7_R_ADD ? ALU_Control = ALU_ADD : ALU_Control = ALU_SUB; 
+                        F3_R_ADD_SUB: ALU_Control = (Func7 == F7_R_ADD) ? ALU_ADD : ALU_SUB; 
                         F3_R_SLL: ALU_Control = ALU_SLL; 
                         F3_R_SLT: ALU_Control = ALU_BLT; // SLT uses same as BLT
                         F3_R_SLTU: ALU_Control = ALU_BLTU; // SLTU uses same as BLTU
                         F3_R_XOR: ALU_Control = ALU_XOR; 
-                        F3_R_SRL_SRA: Func7 == F7_R_SRL ? ALU_Control = ALU_SRL : ALU_Control = ALU_SRA;
+                        F3_R_SRL_SRA: ALU_Control = (Func7 == F7_R_SRL) ? ALU_SRL : ALU_SRA;
                         F3_R_OR: ALU_Control = ALU_OR; 
                         F3_R_AND: ALU_Control = ALU_AND; 
                         default: ALU_Control = 4'bX; // Propagate X to highlight error
@@ -75,7 +75,7 @@ module control_unit (
                     ALU_SrcB_Sel = SRCB_IMM; // Select the immediate   
                     Imm_Type_Sel = IMM_I; // I-Type immediate  
                     Result_Src_Sel = RESULT_ALU; // Changed depending on if JALR or not but default to reduce repetition
-                    case (func3)
+                    case (Func3)
                         F3_I_JALR_ADDI_LB: // JALR, ADDI or LB
                             case (OP)
                                 OP_JALR: // JALR
@@ -93,27 +93,27 @@ module control_unit (
                             endcase
                         F3_I_LH_SLLI: // LH or SLLI
                             begin
-                                OP == OP_I_TYPE_LOAD ? ALU_Control = ALU_ADD : ALU_Control = ALU_SLL;
+                                ALU_Control = (OP == OP_I_TYPE_LOAD) ? ALU_ADD : ALU_SLL;
                                 MEM_Control = MEM_HALFWORD; // Specify halfword load
                             end
                         F3_I_LW_SLTI: // LW or SLTI
                             begin
-                                OP == OP_I_TYPE_LOAD ? ALU_Control = ALU_ADD : ALU_Control = ALU_BLT; // SLTI uses same as BLT
+                                ALU_Control = (OP == OP_I_TYPE_LOAD) ? ALU_ADD : ALU_BLT; // SLTI uses same as BLT
                                 MEM_Control = MEM_WORD; // Specify word load
                             end
                         F3_I_SLTIU: ALU_Control = ALU_BLTU; // SLTIU uses same as BLTU
                         F3_I_LBU_XORI: // LBU or XORI
                             begin
-                                OP == OP_I_TYPE_LOAD ? ALU_Control = ALU_ADD : ALU_Control = ALU_XOR;
+                                ALU_Control = (OP == OP_I_TYPE_LOAD) ? ALU_ADD : ALU_XOR;
                                 MEM_Control = MEM_BYTE_UNSIGNED; // Specify byte unsigned load
                             end
                         F3_I_LHU_SRLI_SRAI: // LHU or SRLI or SRAI
                             begin
-                                OP == OP_I_TYPE_LOAD ? ALU_Control = ALU_ADD : Func7 == F7_I_SRLI ? ALU_Control = ALU_SRL : ALU_Control = ALU_SRA;
+                                ALU_Control = (OP == OP_I_TYPE_LOAD) ? ALU_ADD : ((Func7 == F7_I_SRLI) ? ALU_SRL : ALU_SRA);
                                 MEM_Control = MEM_HALFWORD; // Specify halfword unsigned load
                             end
                         F3_I_ORI: ALU_Control = ALU_OR; // ORI
-                        F3_R_ANDI: ALU_Control = ALU_AND; // ANDI
+                        F3_I_ANDI: ALU_Control = ALU_AND; // ANDI
                         default: ALU_Control = 4'bX; // Propagate X to highlight error
                     endcase
                 end
@@ -153,8 +153,8 @@ module control_unit (
             OP_LUI, OP_AUIPC:
                 begin
                     REG_W_En = 1; // Result stored in register
-                    OP == OP_AUIPC ? ALU_Control = ALU_ADD : ALU_Control = ALU_LUI; // AUIPC uses same as ADD, LUI uses it's own
-                    OP == OP_AUIPC ? ALU_SrcA_Sel = SRCA_PC : ALU_SrcA_Sel = SRCA_REG; // Set depending on if AUIPC or not
+                    ALU_Control = (OP == OP_AUIPC) ? ALU_ADD : ALU_LUI; // AUIPC uses same as ADD, LUI uses it's own
+                    ALU_SrcA_Sel = (OP == OP_AUIPC) ? SRCA_PC : SRCA_REG; // Set depending on if AUIPC or not
                     ALU_SrcB_Sel = SRCB_IMM; // Select immediate
                     Imm_Type_Sel = IMM_U; // U-Type immediate
                     Result_Src_Sel = RESULT_ALU; // Select ALU output
@@ -184,10 +184,10 @@ module register_file (
     input wire CLK, RST, REG_W_En,
     input wire [4:0] REG_R_Addr1, REG_R_Addr2, REG_W_Addr,
     input wire [31:0] REG_W_Data,
-    output wire [31:0] REG_R_Data1, REG_R_Data2
+    output logic [31:0] REG_R_Data1, REG_R_Data2
     );
 
-    reg [31:0] registers [31:0];
+    reg [31:0] registers [0:31];
 
     always_ff @ (posedge CLK) begin
         if (RST) begin
@@ -198,14 +198,16 @@ module register_file (
             registers[REG_W_Addr] <= REG_W_Data;
     end
 
-    assign REG_R_Data1 = registers[REG_R_Addr1];
-    assign REG_R_Data2 = registers[REG_R_Addr2];       
+    always_comb begin
+        REG_R_Data1 = registers[REG_R_Addr1];
+        REG_R_Data2 = registers[REG_R_Addr2];  
+    end    
 endmodule
 
-module immediate_extender ( // TEST REQUIRED: Input instructions with the immediate type and ensure output is correct
+module immediate_extender ( 
     input wire [31:0] Instr, // Uses entire instruction as input to cover all immediate variants
     input wire [2:0] Imm_Type_Sel, // Output from decoder, chooses how to extend
-    output wire [31:0] Imm_Ext  // The output 32-bit immediate for later use
+    output logic [31:0] Imm_Ext  // The output 32-bit immediate for later use
     );
 
     always_comb begin

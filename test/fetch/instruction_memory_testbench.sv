@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////////                                                           
 // Third Year Project: RISC-V RV32i Pipelined Processor
-// File: Program Counter Testbench                                                   
+// File: Instruction Memory Testbench                                                   
 // Description: This is a testbench to ensure that the instruction memory loads and fetches instructions correctly.
 // Author: Luke Shepherd                                                     
 // Date Modified: January 2025                                                                                                                                                                                                                                                       
@@ -39,6 +39,6 @@ module instruction_memory_testbench;
     end
 
     assertInstrCorrect: assert property (@(posedge CLK) Instr === Reference[PC_Out[31:2]])
-            else $error("Mismatch at address %h: got %h, expected %h", PC_Out, Instr, Reference[PC_Out[31:2]]);
+            else $error("Error: Mismatch at address %h: got %h, expected %h", $sampled(PC_Out), $sampled(Instr), $sampled(Reference[PC_Out[31:2]]));
     
 endmodule

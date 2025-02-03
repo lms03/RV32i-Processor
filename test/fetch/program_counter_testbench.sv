@@ -41,11 +41,11 @@ module program_counter_testbench ();
         PC_In <= 32'hFFFF_FFFF; // Set max value
         @(posedge CLK); 
 
-        operate(10); // Simulate operation for up to 10 cycles
+        operate(10); // Simulate operation for 10 cycles
 
         // Test that the PC stalls correctly
         PC_En <= 0;
-        operate(10);    // Vary PC_In to ensure it is not updating during a random stall duration
+        operate($urandom_range(4,10));    // Vary PC_In to ensure it is not updating during a random stall duration
         PC_En <= 1;
         @(posedge CLK);
 
@@ -61,9 +61,8 @@ module program_counter_testbench ();
         $stop;
     end
 
-    // Update the PC with random values for a random duration to simulate operation
-    task operate(int max_duration); begin
-        automatic int duration = $urandom_range(3, max_duration); // Have a duration of at least 3 up to the max_duration
+    // Update the PC with random values for a duration to simulate operation
+    task operate(int duration); begin
         for (int i = 0; i < duration; i++) begin
             PC_In <= $urandom;
             @(posedge CLK);
@@ -73,14 +72,14 @@ module program_counter_testbench ();
 
     // Ensure PC is reset to 0 when RST is high
     assertPCReset: assert property (@(posedge CLK) (RST === 1 |-> ##1 PC_Out === 32'h0))
-        else $warning("Warning: PC did not reset correctly");
+        else $warning("Error: PC did not reset correctly, expected 0 but got %h", $sampled(PC_Out));
 
     // Ensure PC updates when the input to the module is updated
     assertPCIncrement: assert property (@(posedge CLK) (RST === 0 && PC_En === 1 |-> ##1 PC_Out === $past(PC_In)))
-        else $warning("Warning: PC did not update correctly");
+        else $warning("Error: PC did not update correctly, expected %h but got %h", $past(PC_In), $sampled(PC_Out));
 
     // Ensure PC stalls and retains the same output
     assertPCStall: assert property (@(posedge CLK) (RST === 0 && PC_En === 0 |-> ##1 PC_Out === $past(PC_Out)))
-        else $warning("Warning: PC did not stall correctly");
+        else $warning("Error: PC did not stall correctly, expected %h but got %h", $past(PC_Out), $sampled(PC_Out));
 
 endmodule
