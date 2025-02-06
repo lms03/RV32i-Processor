@@ -7,9 +7,11 @@
 // Date Modified: February 2025                                                                                                                                                                                                                                                           
 //////////////////////////////////////////////////////////////////////////////////
 
+import definitions::*;
+
 module idex_register (
     // Global control signals
-    input wire CLK, RST, Flush_D, Stall_En,
+    input wire CLK, RST, Flush_E,
 
     // Control unit signals
     input wire REG_W_En_D, MEM_W_En_D, Jump_En_D, Branch_En_D,
@@ -24,45 +26,90 @@ module idex_register (
     input wire [31:0] REG_R_Data1_D, REG_R_Data2_D,
 
     // Extended Immediate
-    input wire [31:0] Imm_Ext_D
+    input wire [31:0] Imm_Ext_D,
 
     // PC and Instruction
-    input wire [31:0] Instr_D, PC_D, PC_Plus_4_D,
+    input wire [31:0] PC_D, PC_Plus_4_D,
 
     // Control unit signals
-    output wire REG_W_En_E, MEM_W_En_E, Jump_En_E, Branch_En_E,
-    output wire [2:0] MEM_Control_E,
-    output wire [3:0] ALU_Control_E,
-    output wire Branch_Src_Sel_E,
-    output wire ALU_SrcA_Sel_E, ALU_SrcB_Sel_E,
-    output wire [1:0] Result_Src_Sel_E,
+    output logic REG_W_En_E, MEM_W_En_E, Jump_En_E, Branch_En_E,
+    output logic [2:0] MEM_Control_E,
+    output logic [3:0] ALU_Control_E,
+    output logic Branch_Src_Sel_E,
+    output logic ALU_SrcA_Sel_E, ALU_SrcB_Sel_E,
+    output logic [1:0] Result_Src_Sel_E,
 
     // Register data
-    output wire [4:0] RD_E, RS1_E, RS2_E,
-    output wire [31:0] REG_R_Data1_E, REG_R_Data2_E,
+    output logic [4:0] RD_E, RS1_E, RS2_E,
+    output logic [31:0] REG_R_Data1_E, REG_R_Data2_E,
 
     // Extended Immediate
-    output wire [31:0] Imm_Ext_E
+    output logic [31:0] Imm_Ext_E,
 
     // PC and Instruction
-    output logic [31:0] Instr_E, PC_E, PC_Plus_4_E
+    output logic [31:0] PC_E, PC_Plus_4_E
     );
 
     always_ff @ (posedge CLK) begin // Synchronous flush and reset
         if (RST) begin
-            Instr_D <= 32'h0;
-            PC_D <= 32'h0;
-            PC_Plus_4_D <= 32'h0;
+            REG_W_En_E <= 1'h0;
+            MEM_W_En_E <= 1'h0;
+            Jump_En_E <= 1'h0;
+            Branch_En_E <= 1'h0;
+            MEM_Control_E <= 3'h0;
+            ALU_Control_E <= 4'h0;
+            Branch_Src_Sel_E <= 1'h0;
+            ALU_SrcA_Sel_E <= 1'h0;
+            ALU_SrcB_Sel_E <= 1'h0;
+            Result_Src_Sel_E <= 2'h0;
+            RD_E <= 5'h0;
+            RS1_E <= 5'h0;
+            RS2_E <= 5'h0;
+            REG_R_Data1_E <= 32'h0;
+            REG_R_Data2_E <= 32'h0;
+            Imm_Ext_E <= 32'h0;
+            PC_E <= 32'h0;
+            PC_Plus_4_E <= 32'h0;
         end
-        else if (Flush_D) begin // Insert NOP (ADDI x0, x0, 0)
-            Instr_D <= 32'h0000_0013;
-            PC_D <= 32'h2A2A_2A2A; // Debug pattern for clarity
-            PC_Plus_4_D <= 32'h2A2A_2A2A;
+        else if (Flush_E) begin // Insert NOP (ADDI x0, x0, 0)
+            REG_W_En_E <= 1'h0; // Disable state changing signals
+            MEM_W_En_E <= 1'h0;
+            Jump_En_E <= 1'h0;
+            Branch_En_E <= 1'h0;
+            MEM_Control_E <= 3'h0;
+            ALU_Control_E <= ALU_ADD; // ADDI x0, x0, 0 NOP
+            Branch_Src_Sel_E <= 1'h0;
+            ALU_SrcA_Sel_E <= 1'h0;
+            ALU_SrcB_Sel_E <= 1'h0;
+            Result_Src_Sel_E <= 2'h0;
+            RD_E <= 5'h0; // x0
+            RS1_E <= 5'h0; // x0
+            RS2_E <= 5'h0;
+            REG_R_Data1_E <= 32'h0;
+            REG_R_Data2_E <= 32'h0;
+            Imm_Ext_E <= 32'h0; // 0 immediate
+            PC_E <= 32'h2A2A_2A2A; // Debug pattern for clarity
+            PC_Plus_4_E <= 32'h2A2A_2A2A;
         end
-        else if (!Stall_En) begin
-            Instr_D <= Instr_F;
-            PC_D <= PC_F;
-            PC_Plus_4_D <= PC_Plus_4_F;
+        else begin
+            REG_W_En_E <= REG_W_En_D; 
+            MEM_W_En_E <= MEM_W_En_D;
+            Jump_En_E <= Jump_En_D;
+            Branch_En_E <= Branch_En_D;
+            MEM_Control_E <= MEM_Control_D;
+            ALU_Control_E <= ALU_Control_D; 
+            Branch_Src_Sel_E <= Branch_Src_Sel_D;
+            ALU_SrcA_Sel_E <= ALU_SrcA_Sel_D;
+            ALU_SrcB_Sel_E <= ALU_SrcB_Sel_D;
+            Result_Src_Sel_E <= Result_Src_Sel_D;
+            RD_E <= RD_D;
+            RS1_E <= RS1_D;
+            RS2_E <= RS2_D;
+            REG_R_Data1_E <= REG_R_Data1_D;
+            REG_R_Data2_E <= REG_R_Data2_D;
+            Imm_Ext_E <= Imm_Ext_D;
+            PC_E <= PC_D; 
+            PC_Plus_4_E <= PC_Plus_4_D;
         end
     end
 endmodule

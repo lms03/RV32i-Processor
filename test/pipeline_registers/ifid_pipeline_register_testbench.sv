@@ -9,16 +9,14 @@
 import definitions::*;
 
 module ifid_pipeline_register_testbench ();
-    logic CLK;
-    logic RST;
-    logic Flush_D;
-    logic Stall_En;
-    logic [31:0] Instr_F;
-    logic [31:0] PC_F;
-    logic [31:0] PC_Plus_4_F;
-    logic [31:0] Instr_D;
-    logic [31:0] PC_D;
-    logic [31:0] PC_Plus_4_D;
+    // Global control signals
+    logic CLK, RST, Flush_D, Stall_En;
+    
+    // Input signals
+    logic [31:0] Instr_F, PC_F, PC_Plus_4_F;
+
+    // Output signals
+    logic [31:0] Instr_D, PC_D, PC_Plus_4_D;
 
     ifid_register ifid (
         .CLK(CLK),

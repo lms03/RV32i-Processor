@@ -15,8 +15,13 @@ import definitions::*;
 
 module decode (
     input wire CLK, RST, 
-    input wire [31:0] Instr_D, PC_D, PC_Plus_4_D
-    
+    input wire [31:0] Instr_D,
+
+    // Signals from writeback
+    input wire REG_W_En_W, 
+    input wire [31:0] Result_W,
+    input wire [4:0] RD_W,
+
     // Control unit signals
     output wire REG_W_En_D, MEM_W_En_D, Jump_En_D, Branch_En_D,
     output wire [2:0] MEM_Control_D,
@@ -29,12 +34,11 @@ module decode (
     output wire [4:0] RD_D, RS1_D, RS2_D,
     output wire [31:0] REG_R_Data1_D, REG_R_Data2_D,
 
-    // Extended Immediate
+    // Extended immediate
     output wire [31:0] Imm_Ext_D
-
-    // PC and Instruction
-    output wire [31:0] Instr_D, PC_D, PC_Plus_4_D
     );
+
+    wire [2:0] Imm_Type_Sel; 
 
     control_unit control_unit (
         .OP(Instr_D[6:0]),
@@ -56,11 +60,11 @@ module decode (
     register_file reg_file (
         .CLK(CLK),
         .RST(RST),
-        .REG_W_En(REG_W_En_W), // From writeback, come back to this
+        .REG_W_En(REG_W_En_W),  
         .REG_R_Addr1(Instr_D[19:15]),
         .REG_R_Addr2(Instr_D[24:20]),
-        .REG_W_Addr(RD_W[11:7]), // From writeback
-        .REG_W_Data(Result_W), // From writeback
+        .REG_W_Addr(RD_W),  
+        .REG_W_Data(Result_W),  
         .REG_R_Data1(REG_R_Data1_D),
         .REG_R_Data2(REG_R_Data2_D)
     );
@@ -70,6 +74,10 @@ module decode (
         .Imm_Type_Sel(Imm_Type_Sel),
         .Imm_Ext(Imm_Ext_D)
     );
+
+    assign RD_D  = Instr_D[11:7];   // Destination register
+    assign RS1_D = Instr_D[19:15];  // Source register 1 (For hazard unit)
+    assign RS2_D = Instr_D[24:20];  // Source register 2 (For hazard unit)
 
 endmodule
 
@@ -117,7 +125,7 @@ module control_unit (
                         F3_R_SRL_SRA: ALU_Control = (Func7 == F7_R_SRL) ? ALU_SRL : ALU_SRA;
                         F3_R_OR: ALU_Control = ALU_OR; 
                         F3_R_AND: ALU_Control = ALU_AND; 
-                        default: ALU_Control = 4'bX; // Propagate X to highlight error
+                        default: ALU_Control = 4'hX; // Propagate X to highlight error
                     endcase
                 end
             OP_I_TYPE_LOAD, OP_JALR, OP_I_TYPE:
@@ -142,7 +150,7 @@ module control_unit (
                                         MEM_Control = MEM_BYTE; // Specify byte load for LB
                                         ALU_Control = ALU_ADD; // Load address calculation uses same operation as ADDI
                                     end
-                                default: ALU_Control = 4'bX; // Propagate X to highlight error
+                                default: ALU_Control = 4'hX; // Propagate X to highlight error
                             endcase
                         F3_I_LH_SLLI: // LH or SLLI
                             begin
@@ -167,7 +175,7 @@ module control_unit (
                             end
                         F3_I_ORI: ALU_Control = ALU_OR; // ORI
                         F3_I_ANDI: ALU_Control = ALU_AND; // ANDI
-                        default: ALU_Control = 4'bX; // Propagate X to highlight error
+                        default: ALU_Control = 4'hX; // Propagate X to highlight error
                     endcase
                 end
             OP_S_TYPE:
@@ -200,7 +208,7 @@ module control_unit (
                         F3_B_BGE: ALU_Control = ALU_BGE; 
                         F3_B_BLTU: ALU_Control = ALU_BLTU; 
                         F3_B_BGEU: ALU_Control = ALU_BGEU; 
-                        default: ALU_Control = 4'bX; // Propagate X to highlight error
+                        default: ALU_Control = 4'hX; // Propagate X to highlight error
                     endcase
                 end
             OP_LUI, OP_AUIPC:
@@ -247,7 +255,7 @@ module register_file (
             for (int i = 0; i < 32; i++)
                 registers[i] <= 32'h0;
         end
-        else if (REG_W_En && REG_W_Addr != 5'b0) // Prevent write to x0
+        else if (REG_W_En && REG_W_Addr != 5'h0) // Prevent write to x0
             registers[REG_W_Addr] <= REG_W_Data;
     end
 
