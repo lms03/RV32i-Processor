@@ -3,7 +3,7 @@
 // File: Control Unit Testbench                                                   
 // Description: This is a testbench which aims to verify that the control unit properly decodes instructions to produce the correct control signals.
 // Author: Luke Shepherd                                                     
-// Date Modified: January 2025                                                                                                                                                                                                                                                       
+// Date Modified: February 2025                                                                                                                                                                                                                                                    
 //////////////////////////////////////////////////////////////////////////////////
 
 import definitions::*;
@@ -48,6 +48,11 @@ module control_unit_testbench;
         @(posedge CLK);
         check_signals(1, 0, 0, 0, MEM_BYTE, ALU_SUB, IMM_I, BRANCH_PC, SRCA_REG, SRCB_REG, RESULT_ALU);
         
+        // Test R-type instruction with different Func7
+        Instr <= 32'h0087_51B3; // SRL
+        @(posedge CLK);
+        check_signals(1, 0, 0, 0, MEM_BYTE, ALU_SRL, IMM_I, BRANCH_PC, SRCA_REG, SRCB_REG, RESULT_ALU);
+
         // Test I-type instruction
         Instr <= 32'h4087_3193; //  SLTIU
         @(posedge CLK);
@@ -94,7 +99,7 @@ module control_unit_testbench;
         check_signals(0, 0, 0, 0, MEM_BYTE, ALU_ADD, IMM_I, BRANCH_PC, SRCA_REG, SRCB_REG, RESULT_ALU);
 
         // Test unsupported illegal instruction ensures no effect on state
-        Instr <= 32'h287_01B3; //  MUL
+        Instr <= 32'h0287_01B3; //  MUL
         @(posedge CLK);
         check_signals(0, 0, 0, 0, MEM_BYTE, ALU_ADD, IMM_I, BRANCH_PC, SRCA_REG, SRCB_REG, RESULT_ALU);
         

@@ -16,8 +16,61 @@ import definitions::*;
 module decode (
     input wire CLK, RST, 
     input wire [31:0] Instr_D, PC_D, PC_Plus_4_D
-);
-// Instantiate the below modules here to wire them up
+    
+    // Control unit signals
+    output wire REG_W_En_D, MEM_W_En_D, Jump_En_D, Branch_En_D,
+    output wire [2:0] MEM_Control_D,
+    output wire [3:0] ALU_Control_D,
+    output wire Branch_Src_Sel_D,
+    output wire ALU_SrcA_Sel_D, ALU_SrcB_Sel_D,
+    output wire [1:0] Result_Src_Sel_D,
+    
+    // Register data
+    output wire [4:0] RD_D, RS1_D, RS2_D,
+    output wire [31:0] REG_R_Data1_D, REG_R_Data2_D,
+
+    // Extended Immediate
+    output wire [31:0] Imm_Ext_D
+
+    // PC and Instruction
+    output wire [31:0] Instr_D, PC_D, PC_Plus_4_D
+    );
+
+    control_unit control_unit (
+        .OP(Instr_D[6:0]),
+        .Func3(Instr_D[14:12]),
+        .Func7(Instr_D[31:25]),
+        .REG_W_En(REG_W_En_D),
+        .MEM_W_En(MEM_W_En_D),
+        .Jump_En(Jump_En_D),
+        .Branch_En(Branch_En_D),
+        .MEM_Control(MEM_Control_D),
+        .ALU_Control(ALU_Control_D),
+        .Imm_Type_Sel(Imm_Type_Sel),
+        .Branch_Src_Sel(Branch_Src_Sel_D),
+        .ALU_SrcA_Sel(ALU_SrcA_Sel_D),
+        .ALU_SrcB_Sel(ALU_SrcB_Sel_D),
+        .Result_Src_Sel(Result_Src_Sel_D)
+    );
+
+    register_file reg_file (
+        .CLK(CLK),
+        .RST(RST),
+        .REG_W_En(REG_W_En_W), // From writeback, come back to this
+        .REG_R_Addr1(Instr_D[19:15]),
+        .REG_R_Addr2(Instr_D[24:20]),
+        .REG_W_Addr(RD_W[11:7]), // From writeback
+        .REG_W_Data(Result_W), // From writeback
+        .REG_R_Data1(REG_R_Data1_D),
+        .REG_R_Data2(REG_R_Data2_D)
+    );
+
+    immediate_extender imm_extender (
+        .Instr(Instr_D),
+        .Imm_Type_Sel(Imm_Type_Sel),
+        .Imm_Ext(Imm_Ext_D)
+    );
+
 endmodule
 
 module control_unit (

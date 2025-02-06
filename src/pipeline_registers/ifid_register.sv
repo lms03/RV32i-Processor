@@ -1,10 +1,10 @@
 //////////////////////////////////////////////////////////////////////////////////                                                           
 // Third Year Project: RISC-V RV32i Pipelined Processor
 // File: Fetch to Decode Pipeline Register                                          
-// Description: Holds the instruction and program counter to be passed to the decode stage.
+// Description: Holds the instruction and program counters to be passed to the decode stage.
 //              Uses synchronous reset and flush.     
 // Author: Luke Shepherd                                                     
-// Date Modified: December 2024                                                                                                                                                                                                                                                           
+// Date Modified: February 2025                                                                                                                                                                                                                                                           
 //////////////////////////////////////////////////////////////////////////////////
 
 module ifid_register (
@@ -20,9 +20,9 @@ module ifid_register (
             PC_Plus_4_D <= 32'h0;
         end
         else if (Flush_D) begin // Insert NOP (ADDI x0, x0, 0)
-            Instr_D <= 32'h00000013;
-            PC_D <= 32'h0; // Perhaps should set this to something else, such as a debug pattern for clarity
-            PC_Plus_4_D <= 32'h0;
+            Instr_D <= 32'h0000_0013;
+            PC_D <= 32'h2A2A_2A2A; // Debug pattern for clarity
+            PC_Plus_4_D <= 32'h2A2A_2A2A;
         end
         else if (!Stall_En) begin
             Instr_D <= Instr_F;
