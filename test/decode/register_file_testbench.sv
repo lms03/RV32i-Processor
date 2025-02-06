@@ -47,7 +47,7 @@ module register_file_testbench;
         for (int i = 0; i < 32; i++) begin
             REG_R_Addr1 <= i; // Read from each register
             @(posedge CLK);
-            assert (REG_R_Data1 === 32'h0000_0000) 
+            assert (REG_R_Data1 == 32'h0000_0000) 
                 else $error("Error: Register %h did not reset correctly, expected %h, got %h", i, 32'h0000_0000, $sampled(REG_R_Data1));
         end
 
@@ -60,7 +60,7 @@ module register_file_testbench;
         REG_R_Addr1 <= 0; // Set read to x0
         REG_W_En <= 0; // Disable write
         @(posedge CLK); 
-        assert (REG_R_Data1 === 32'h0000_0000) 
+        assert (REG_R_Data1 == 32'h0000_0000) 
             else $error("Error: Violated register 0 specification, expected %h, got %h", 32'h0000_0000, $sampled(REG_R_Data1));
 
         @(posedge CLK); 
@@ -73,7 +73,7 @@ module register_file_testbench;
         REG_R_Addr2 <= 5'h1F; // Set read to x31, use second read port
         REG_W_En <= 0; 
         @(posedge CLK);
-        assert (REG_R_Data2 === 32'h2A2A_2A2A) 
+        assert (REG_R_Data2 == 32'h2A2A_2A2A) 
             else $error("Error: Write did not execute correctly, expected %h, got %h", 32'h2A2A_2A2A, $sampled(REG_R_Data2));
         
         @(posedge CLK); 
@@ -95,9 +95,9 @@ module register_file_testbench;
             REG_R_Addr1 <= i;
             REG_R_Addr2 <= i+1;
             @(posedge CLK);
-            assert (REG_R_Data1 === Reference[i]) 
+            assert (REG_R_Data1 == Reference[i]) 
                 else $error("Error: Register %h did not read/write correctly, expected %h, got %h", i, Reference[i], $sampled(REG_R_Data1));
-            assert (REG_R_Data2 === Reference[i+1]) 
+            assert (REG_R_Data2 == Reference[i+1]) 
                 else $error("Error: Register %h did not read/write correctly, expected %h, got %h", i+1, Reference[i+1], $sampled(REG_R_Data2));
         end
 

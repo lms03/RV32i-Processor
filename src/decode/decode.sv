@@ -87,7 +87,7 @@ module control_unit (
                                 OP_I_TYPE, OP_I_TYPE_LOAD:  // ADDI and LB
                                     begin
                                         MEM_Control = MEM_BYTE; // Specify byte load for LB
-                                        ALU_Control = ALU_ADD; // Load address calculation uses same operation as ADD
+                                        ALU_Control = ALU_ADD; // Load address calculation uses same operation as ADDI
                                     end
                                 default: ALU_Control = 4'bX; // Propagate X to highlight error
                             endcase

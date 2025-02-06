@@ -9,7 +9,6 @@
 import definitions::CLOCK_PERIOD;
 
 module instruction_memory_testbench;
-    `define MAX_CYCLES 50 // Control sim length
     logic CLK; // Wrap module with a clock to better represent the outside system
     logic [31:0] PC_Out;
     logic [31:0] Instr;
@@ -26,11 +25,10 @@ module instruction_memory_testbench;
 
     initial begin
         $readmemh("src/program.hex", Reference); // Load the file to check with
-
         @(posedge CLK);
         PC_Out <= 0;  // Initialize PC
 
-        repeat (`MAX_CYCLES) @ (posedge CLK); // Run some time to allow for all instructions to be read
+        repeat (10) @ (posedge CLK); // Run some time to allow for all instructions to be read
         $stop; 
     end
 

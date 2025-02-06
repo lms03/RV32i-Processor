@@ -20,21 +20,32 @@ module immediate_extender_testbench;
         .Imm_Ext(Imm_Ext)
     );
 
-    logic [31:0] Expected; // The immediate output that is expected
-
     initial CLK <= 1; // Initialize the clock
     always #(CLOCK_PERIOD / 2) CLK <= ~CLK; // Generate the clock
 
     initial begin
         @(posedge CLK); // Wait for first posedge before starting
+
         Instr <= 32'h2A2A_2A2A; // Initialize instruction for first manual check
         Imm_Type_Sel <= IMM_I; // Initialize type to I-type
-        Expected <= 32'h0000_02A2; // Expected immediate value for the instruction (Last 12 bits of the instruction with sign extension)
         @(posedge CLK);
-        
-        Imm_Type_Sel <= IMM_B; // Initialize type to B-type to manually check one of the more complicated types
-        Expected <= 32'h0000_02B4; // Expected immediate value for the instruction (Bit 31, Bit 7, Bits 30-25, Bits 11-8, 0 with sign extension)
+        assert (Imm_Ext == 32'h0000_02A2) else $error("Error: Incorrect extension producted, expected 0x000002A2, got %h", $sampled(Imm_Ext));
+
+        Imm_Type_Sel <= IMM_S;
         @(posedge CLK);
+        assert (Imm_Ext == 32'h0000_02B4) else $error("Error: Incorrect extension producted, expected 0x000002B4, got %h", $sampled(Imm_Ext));
+
+        Imm_Type_Sel <= IMM_B;
+        @(posedge CLK);
+        assert (Imm_Ext == 32'h0000_02B4) else $error("Error: Incorrect extension producted, expected 0x000002B4, got %h", $sampled(Imm_Ext));
+
+        Imm_Type_Sel <= IMM_U;
+        @(posedge CLK);
+        assert (Imm_Ext == 32'h2A2A_2000) else $error("Error: Incorrect extension producted, expected 0x2A2A2000, got %h", $sampled(Imm_Ext));
+
+        Imm_Type_Sel <= IMM_J;
+        @(posedge CLK);
+        assert (Imm_Ext == 32'h000A_22A2) else $error("Error: Incorrect extension producted, expected 0x000A22A2, got %h", $sampled(Imm_Ext));
 
         operate(10); // Simulate 10 random extensions for each of the 5 types of immediate
 
@@ -42,28 +53,24 @@ module immediate_extender_testbench;
         $stop; 
     end
 
-    // Could just check sign extension amount and type.
     // Simulate the operation of the extender with random inputs
     task operate(int duration); begin
         for (int i = 0; i < 5; i++) begin
             Imm_Type_Sel = i; // Step through the 5 immediate types
             for (int j = 0; j < duration; j++) begin
                 Instr = $urandom;
-                case (Imm_Type_Sel)
-                    IMM_I: Expected = {{21{Instr[31]}}, Instr[31:20]};
-                    IMM_S: Expected = {{21{Instr[31]}}, Instr[31:25], Instr[11:7]};
-                    IMM_B: Expected = {{20{Instr[31]}}, Instr[7], Instr[30:25], Instr[11:8], 1'b0};
-                    IMM_U: Expected = {Instr[31:12], 12'b0};
-                    IMM_J: Expected = {{12{Instr[31]}}, Instr[19:12], Instr[20], Instr[30:21], 1'b0};
-                    default: Expected = 32'hX; // Default to X if no case is matched
-                endcase
                 @(posedge CLK);
+                assert (Imm_Ext[31] == Instr[31]) else $error("Error: Incorrect sign produced, expected %h, got %h", $sampled(Instr[31]), $sampled(Imm_Ext[31]));
+                case(Imm_Type_Sel)
+                    IMM_I, IMM_S, IMM_B: assert (Imm_Ext[31:12] == {20{Instr[31]}}) else $error("Error: Incorrect extension produced, expected %h, got %h", {20{Instr[31]}}, $sampled(Imm_Ext[31:12]));
+                    IMM_U: assert (Imm_Ext[11:0] == 12'h0) else $error("Error: Incorrect extension produced, expected %h, got %h", 12'h0 ,$sampled(Imm_Ext[11:0]));
+                    IMM_J: assert (Imm_Ext[31:20] == {12{Instr[31]}}) else $error("Error: Incorrect extension produced, expected %h, got %h", {12{Instr[31]}}, $sampled(Imm_Ext[31:20])); 
+                    default: $error("Error: Test should not reach this, R-Type does not exist in immediate extender");
+                endcase
+                if(Imm_Type_Sel == IMM_J || Imm_Type_Sel == IMM_B) assert (Imm_Ext[0] == 0) else $error("Error: Incorrect extension produced, expected 0, got %h", $sampled(Imm_Ext[0]));
             end
         end
 	end
     endtask
-
-    assertImmCorrect: assert property (@(posedge CLK) Imm_Ext === Expected)
-            else $error("Error: Incorrect extension producted, expected %h, got %h", $sampled(Expected), $sampled(Imm_Ext));
     
 endmodule

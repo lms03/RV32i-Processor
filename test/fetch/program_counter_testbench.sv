@@ -71,15 +71,15 @@ module program_counter_testbench ();
     endtask
 
     // Ensure PC is reset to 0 when RST is high
-    assertPCReset: assert property (@(posedge CLK) (RST === 1 |-> ##1 PC_Out === 32'h0))
+    assertPCReset: assert property (@(posedge CLK) (RST == 1 |-> ##1 PC_Out == 32'h0))
         else $warning("Error: PC did not reset correctly, expected 0 but got %h", $sampled(PC_Out));
 
     // Ensure PC updates when the input to the module is updated
-    assertPCIncrement: assert property (@(posedge CLK) (RST === 0 && PC_En === 1 |-> ##1 PC_Out === $past(PC_In)))
+    assertPCIncrement: assert property (@(posedge CLK) (RST == 0 && PC_En == 1 |-> ##1 PC_Out == $past(PC_In)))
         else $warning("Error: PC did not update correctly, expected %h but got %h", $past(PC_In), $sampled(PC_Out));
 
     // Ensure PC stalls and retains the same output
-    assertPCStall: assert property (@(posedge CLK) (RST === 0 && PC_En === 0 |-> ##1 PC_Out === $past(PC_Out)))
+    assertPCStall: assert property (@(posedge CLK) (RST == 0 && PC_En == 0 |-> ##1 PC_Out == $past(PC_Out)))
         else $warning("Error: PC did not stall correctly, expected %h but got %h", $past(PC_Out), $sampled(PC_Out));
 
 endmodule
