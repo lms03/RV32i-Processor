@@ -42,6 +42,7 @@ module immediate_extender_testbench;
         $stop; 
     end
 
+    // Could just check sign extension amount and type.
     // Simulate the operation of the extender with random inputs
     task operate(int duration); begin
         for (int i = 0; i < 5; i++) begin
