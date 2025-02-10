@@ -8,7 +8,7 @@
 
 import definitions::*;
 
-module ifid_pipeline_register_testbench ();
+module idex_pipeline_register_testbench ();
     // Global control signals
     logic CLK, RST, Flush_E;
 
