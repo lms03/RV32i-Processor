@@ -42,10 +42,10 @@ parameter SRCB_REG = 1'b0;
 parameter SRCB_IMM = 1'b1;
 
 // ALU Control Signals
-parameter ALU_ADD = 4'b0000; // Add SrcA and SrcB - ADD(I), L, S 
+parameter ALU_ADD = 4'b0000; // Add SrcA and SrcB - ADD(I), L(B/H/W), S(B/H/W), AUIPC
 parameter ALU_SUB = 4'b0001; // Subtract SrcA and SrcB - SUB 
-parameter ALU_AND = 4'b0010; // Bitwise logical AND on SrcA and SrcB- AND(I) 
-parameter ALU_OR = 4'b0011; // Bitwise logical OR on SrcA and SrcB- OR(I)
+parameter ALU_AND = 4'b0010; // Bitwise logical AND on SrcA and SrcB - AND(I) 
+parameter ALU_OR = 4'b0011; // Bitwise logical OR on SrcA and SrcB - OR(I)
 parameter ALU_XOR = 4'b0100; // Bitwise logical XOR on SrcA and SrcB - XOR(I)
 parameter ALU_SLL = 4'b0101; // Left shift by SrcB[4:0] and zero extend - SLL(I)
 parameter ALU_SRL = 4'b0110; // Right shift by SrcB[4:0] and zero extend - SRL(I)

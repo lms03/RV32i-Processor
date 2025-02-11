@@ -201,12 +201,12 @@ module idex_pipeline_register_testbench ();
     assertRegisterPassesControls: assert property (@(posedge CLK) 
         ((RST == 0 && Flush_E == 0) |-> ##1 (MEM_Control_E == $past(MEM_Control_D) && ALU_Control_E == $past(ALU_Control_D))))
         else $error("Error: Register did not pass data correctly, expected control signals to be MEM_Control_E %h ALU_Control_E %h but got MEM_Control_E %h ALU_Control_E %h", 
-            $sampled(MEM_Control_D), $sampled(ALU_Control_D), $sampled(MEM_Control_E), $sampled(ALU_Control_E));
+            $sampled($past(MEM_Control_D)), $sampled($past(ALU_Control_D)), $sampled(MEM_Control_E), $sampled(ALU_Control_E));
 
     assertRegisterPassesSelects: assert property (@(posedge CLK) 
         ((RST == 0 && Flush_E == 0) |-> ##1 (Branch_Src_Sel_E == $past(Branch_Src_Sel_D) && ALU_SrcA_Sel_E == $past(ALU_SrcA_Sel_D) && ALU_SrcB_Sel_E == $past(ALU_SrcB_Sel_D) && Result_Src_Sel_E == $past(Result_Src_Sel_D))))
         else $error("Error: Register did not pass data correctly, expected select signals to be Branch_Src_Sel_E %h ALU_SrcA_Sel_E %h ALU_SrcB_Sel_E %h Result_Src_Sel_E %h but got Branch_Src_Sel_E %h ALU_SrcA_Sel_E %h ALU_SrcB_Sel_E %h Result_Src_Sel_E %h", 
-            $sampled(Branch_Src_Sel_D), $sampled(ALU_SrcA_Sel_D), $sampled(ALU_SrcB_Sel_D), $sampled(Result_Src_Sel_D), $sampled(Branch_Src_Sel_E), $sampled(ALU_SrcA_Sel_E), $sampled(ALU_SrcB_Sel_E), $sampled(Result_Src_Sel_E));
+            $sampled($past(Branch_Src_Sel_D)), $sampled($past(ALU_SrcA_Sel_D)), $sampled($past(ALU_SrcB_Sel_D)), $sampled($past(Result_Src_Sel_D)), $sampled(Branch_Src_Sel_E), $sampled(ALU_SrcA_Sel_E), $sampled(ALU_SrcB_Sel_E), $sampled(Result_Src_Sel_E));
 
     assertRegisterPassesRegisterData: assert property (@(posedge CLK) 
         ((RST == 0 && Flush_E == 0) |-> ##1 (RD_E == $past(RD_D) && RS1_E == $past(RS1_D) && RS2_E == $past(RS2_D) && REG_R_Data1_E == $past(REG_R_Data1_D) && REG_R_Data2_E == $past(REG_R_Data2_D))))
@@ -216,6 +216,6 @@ module idex_pipeline_register_testbench ();
     assertRegisterPassesOther: assert property (@(posedge CLK)
         ((RST == 0 && Flush_E == 0) |-> ##1 (Imm_Ext_E == $past(Imm_Ext_D) && PC_E == $past(PC_D) && PC_Plus_4_E == $past(PC_Plus_4_D))))
         else $error("Error: Register did not pass data correctly, expected signals to be Imm_Ext_E %h, PC_E %h, PC_Plus_4_E %h but got Imm_Ext_E %h, PC_E %h, PC_Plus_4_E %h", 
-            $sampled(Imm_Ext_D), $sampled(PC_D), $sampled(PC_Plus_4_D), $sampled(Imm_Ext_E), $sampled(PC_E), $sampled(PC_Plus_4_E));
+            $sampled($past(Imm_Ext_D)), $sampled($past(PC_D)), $sampled($past(PC_Plus_4_D)), $sampled(Imm_Ext_E), $sampled(PC_E), $sampled(PC_Plus_4_E));
 
 endmodule

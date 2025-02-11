@@ -29,23 +29,23 @@ module immediate_extender_testbench;
         Instr <= 32'h2A2A_2A2A; // Initialize instruction for first manual check
         Imm_Type_Sel <= IMM_I; // Initialize type to I-type
         @(posedge CLK);
-        assert (Imm_Ext == 32'h0000_02A2) else $error("Error: Incorrect extension producted, expected 0x000002A2, got %h", $sampled(Imm_Ext));
+        assert (Imm_Ext == 32'h0000_02A2) else $error("Error: Incorrect extension produced, expected 0x000002A2, got %h", $sampled(Imm_Ext));
 
         Imm_Type_Sel <= IMM_S;
         @(posedge CLK);
-        assert (Imm_Ext == 32'h0000_02B4) else $error("Error: Incorrect extension producted, expected 0x000002B4, got %h", $sampled(Imm_Ext));
+        assert (Imm_Ext == 32'h0000_02B4) else $error("Error: Incorrect extension produced, expected 0x000002B4, got %h", $sampled(Imm_Ext));
 
         Imm_Type_Sel <= IMM_B;
         @(posedge CLK);
-        assert (Imm_Ext == 32'h0000_02B4) else $error("Error: Incorrect extension producted, expected 0x000002B4, got %h", $sampled(Imm_Ext));
+        assert (Imm_Ext == 32'h0000_02B4) else $error("Error: Incorrect extension produced, expected 0x000002B4, got %h", $sampled(Imm_Ext));
 
         Imm_Type_Sel <= IMM_U;
         @(posedge CLK);
-        assert (Imm_Ext == 32'h2A2A_2000) else $error("Error: Incorrect extension producted, expected 0x2A2A2000, got %h", $sampled(Imm_Ext));
+        assert (Imm_Ext == 32'h2A2A_2000) else $error("Error: Incorrect extension produced, expected 0x2A2A2000, got %h", $sampled(Imm_Ext));
 
         Imm_Type_Sel <= IMM_J;
         @(posedge CLK);
-        assert (Imm_Ext == 32'h000A_22A2) else $error("Error: Incorrect extension producted, expected 0x000A22A2, got %h", $sampled(Imm_Ext));
+        assert (Imm_Ext == 32'h000A_22A2) else $error("Error: Incorrect extension produced, expected 0x000A22A2, got %h", $sampled(Imm_Ext));
 
         operate(10); // Simulate 10 random extensions for each of the 5 types of immediate
 

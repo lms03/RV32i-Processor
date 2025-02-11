@@ -28,7 +28,7 @@ module idex_register (
     // Extended Immediate
     input wire [31:0] Imm_Ext_D,
 
-    // PC and Instruction
+    // PC
     input wire [31:0] PC_D, PC_Plus_4_D,
 
     // Control unit signals
@@ -46,7 +46,7 @@ module idex_register (
     // Extended Immediate
     output logic [31:0] Imm_Ext_E,
 
-    // PC and Instruction
+    // PC
     output logic [31:0] PC_E, PC_Plus_4_E
     );
 
