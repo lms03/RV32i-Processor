@@ -53,22 +53,38 @@ module arithmetic_logic_unit (
             ALU_BEQ: 
                 begin
                     if (SrcA == SrcB) Branch_Condition = 1'b1;
-                    else Branch_Condition = 1'b0;
+                    else Branch_Condition = 1'b0; 
                 end
             ALU_BNE: 
                 begin
                     if (SrcA != SrcB) Branch_Condition = 1'b1;
                     else Branch_Condition = 1'b0;
                 end
-            ALU_BLT: 
+            ALU_BLT:
                 begin
-                    if ($signed(SrcA) < $signed(SrcB)) Branch_Condition = 1'b1;
-                    else Branch_Condition = 1'b0;
+                    if ($signed(SrcA) < $signed(SrcB)) 
+                    begin 
+                        Branch_Condition = 1'b1;
+                        Result = 32'h1; // Result for SLT
+                    end
+                    else 
+                    begin 
+                        Branch_Condition = 1'b0;
+                        Result = 32'h0; // Result for SLT
+                    end
                 end
             ALU_BLTU: 
                 begin
-                    if (SrcA < SrcB) Branch_Condition = 1'b1;
-                    else Branch_Condition = 1'b0;
+                    if (SrcA < SrcB) 
+                    begin  
+                        Branch_Condition = 1'b1;
+                        Result = 32'h1; // Result for SLTU
+                    end
+                    else 
+                    begin 
+                        Branch_Condition = 1'b0;
+                        Result = 32'h0; // Result for SLTU
+                    end
                 end
             ALU_BGE: 
                 begin

@@ -136,59 +136,24 @@ module idex_pipeline_register_testbench ();
     end
     endtask
 
-    // Assert register resets to 0 when reset is asserted
+    // Assert enables resets to 0 (safe value) when reset is asserted
     assertRegisterResetEnables: assert property (@(posedge CLK) 
         (RST == 1 |-> ##1 (REG_W_En_E == 1'b0 && MEM_W_En_E == 1'b0 && Jump_En_E == 1'b0 && Branch_En_E == 1'b0)))
         else $error("Error: Register did not reset correctly, expected enable signals to be reset but got REG_W_En_E %h, MEM_W_En_E %h, Jump_En_E %h, Branch_En_E %h", 
             $sampled(REG_W_En_E), $sampled(MEM_W_En_E), $sampled(Jump_En_E), $sampled(Branch_En_E));
-
-    assertRegisterResetControls: assert property (@(posedge CLK) 
-        (RST == 1 |-> ##1 (MEM_Control_E == 3'h0 && ALU_Control_E == 4'h0)))
-        else $error("Error: Register did not reset correctly, expected control signals to be reset but got MEM_Control_E %h, ALU_Control_E %h", 
-            $sampled(MEM_Control_E), $sampled(ALU_Control_E));
-
-    assertRegisterResetSelects: assert property (@(posedge CLK) 
-        (RST == 1 |-> ##1 (Branch_Src_Sel_E == 1'b0 && ALU_SrcA_Sel_E == 1'b0 && ALU_SrcB_Sel_E == 1'b0 && Result_Src_Sel_E == 2'h0)))
-        else $error("Error: Register did not reset correctly, expected select signals to be reset but got Branch_Src_Sel_E %h, ALU_SrcA_Sel_E %h, ALU_SrcB_Sel_E %h, Result_Src_Sel_E %h", 
-            $sampled(Branch_Src_Sel_E), $sampled(ALU_SrcA_Sel_E), $sampled(ALU_SrcB_Sel_E), $sampled(Result_Src_Sel_E));
-
-    assertRegisterResetRegisterData: assert property (@(posedge CLK) 
-        (RST == 1 |-> ##1 (RD_E == 5'h0 && RS1_E == 5'h0 && RS2_E == 5'h0 && REG_R_Data1_E == 32'h0 && REG_R_Data2_E == 32'h0)))
-        else $error("Error: Register did not reset correctly, expected register data signals to be reset but got RD_E %h, RS1_E %h, RS2_E %h, REG_R_Data1_E %h, REG_R_Data2_E %h", 
-            $sampled(RD_E), $sampled(RS1_E), $sampled(RS2_E), $sampled(REG_R_Data1_E), $sampled(REG_R_Data2_E));
-
-    assertRegisterResetOther: assert property (@(posedge CLK) 
-        (RST == 1 |-> ##1 (Imm_Ext_E == 32'h0 && PC_E == 32'h0 && PC_Plus_4_E == 32'h0)))
-        else $error("Error: Register did not reset correctly, expected signals to be reset but got Imm_Ext_E %h, PC_E %h, PC_Plus_4_E %h", 
-            $sampled(Imm_Ext_E), $sampled(PC_E), $sampled(PC_Plus_4_E));
 
     // --------------------------------------------------------
 
     // Assert register inserts a NOP when flush is asserted
     assertRegisterFlushEnables: assert property (@(posedge CLK) 
         ((RST == 0 && Flush_E == 1) |-> ##1 (REG_W_En_E == 1'b0 && MEM_W_En_E == 1'b0 && Jump_En_E == 1'b0 && Branch_En_E == 1'b0)))
-        else $error("Error: Register did not flush correctly, expected enable signals to be reset but got REG_W_En_E %h, MEM_W_En_E %h, Jump_En_E %h, Branch_En_E %h", 
+        else $error("Error: Register did not flush correctly, expected enable signals to be safe but got REG_W_En_E %h, MEM_W_En_E %h, Jump_En_E %h, Branch_En_E %h", 
             $sampled(REG_W_En_E), $sampled(MEM_W_En_E), $sampled(Jump_En_E), $sampled(Branch_En_E));
 
-    assertRegisterFlushControls: assert property (@(posedge CLK) 
-        ((RST == 0 && Flush_E == 1) |-> ##1 (MEM_Control_E == 3'h0 && ALU_Control_E == 4'h0)))
-        else $error("Error: Register did not flush correctly, expected control signals to be reset but got MEM_Control_E %h, ALU_Control_E %h", 
-            $sampled(MEM_Control_E), $sampled(ALU_Control_E));
-
-    assertRegisterFlushSelects: assert property (@(posedge CLK) 
-        ((RST == 0 && Flush_E == 1) |-> ##1 (Branch_Src_Sel_E == 1'b0 && ALU_SrcA_Sel_E == 1'b0 && ALU_SrcB_Sel_E == 1'b0 && Result_Src_Sel_E == 2'h0)))
-        else $error("Error: Register did not flush correctly, expected select signals to be reset but got Branch_Src_Sel_E %h, ALU_SrcA_Sel_E %h, ALU_SrcB_Sel_E %h, Result_Src_Sel_E %h", 
-            $sampled(Branch_Src_Sel_E), $sampled(ALU_SrcA_Sel_E), $sampled(ALU_SrcB_Sel_E), $sampled(Result_Src_Sel_E));
-
-    assertRegisterFlushRegisterData: assert property (@(posedge CLK) 
-        ((RST == 0 && Flush_E == 1) |-> ##1 (RD_E == 5'h0 && RS1_E == 5'h0 && RS2_E == 5'h0 && REG_R_Data1_E == 32'h0 && REG_R_Data2_E == 32'h0)))
-        else $error("Error: Register did not flush correctly, expected register data signals to be reset but got RD_E %h, RS1_E %h, RS2_E %h, REG_R_Data1_E %h, REG_R_Data2_E %h", 
-            $sampled(RD_E), $sampled(RS1_E), $sampled(RS2_E), $sampled(REG_R_Data1_E), $sampled(REG_R_Data2_E));
-
     assertRegisterFlushOther: assert property (@(posedge CLK) 
-        ((RST == 0 && Flush_E == 1) |-> ##1 (Imm_Ext_E == 32'h0 && PC_E == 32'h2A2A_2A2A && PC_Plus_4_E == 32'h2A2A_2A2A)))
-        else $error("Error: Register did not flush correctly, expected signals to be 0x00000000 and 0x2A2A2A2A but got Imm_Ext_E %h, PC_E %h, PC_Plus_4_E %h", 
-            $sampled(Imm_Ext_E), $sampled(PC_E), $sampled(PC_Plus_4_E));
+        ((RST == 0 && Flush_E == 1) |-> ##1 (PC_E == 32'h2A2A_2A2A && PC_Plus_4_E == 32'h2A2A_2A2A)))
+        else $error("Error: Register did not flush correctly, expected PC to be 0x2A2A2A2A but got PC_E %h, PC_Plus_4_E %h", 
+            $sampled(PC_E), $sampled(PC_Plus_4_E));
 
     // --------------------------------------------------------
 

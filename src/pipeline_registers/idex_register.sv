@@ -50,44 +50,18 @@ module idex_register (
     output logic [31:0] PC_E, PC_Plus_4_E
     );
 
-    always_ff @ (posedge CLK) begin // Synchronous flush and reset
-        if (RST) begin
-            REG_W_En_E <= 1'h0;
+    always_ff @ (posedge CLK) begin // Synchronous flush and reset 
+        if (RST) begin // Ensure a safe state
+            REG_W_En_E <= 1'h0; 
             MEM_W_En_E <= 1'h0;
             Jump_En_E <= 1'h0;
             Branch_En_E <= 1'h0;
-            MEM_Control_E <= 3'h0;
-            ALU_Control_E <= 4'h0;
-            Branch_Src_Sel_E <= 1'h0;
-            ALU_SrcA_Sel_E <= 1'h0;
-            ALU_SrcB_Sel_E <= 1'h0;
-            Result_Src_Sel_E <= 2'h0;
-            RD_E <= 5'h0;
-            RS1_E <= 5'h0;
-            RS2_E <= 5'h0;
-            REG_R_Data1_E <= 32'h0;
-            REG_R_Data2_E <= 32'h0;
-            Imm_Ext_E <= 32'h0;
-            PC_E <= 32'h0;
-            PC_Plus_4_E <= 32'h0;
         end
-        else if (Flush_E) begin // Insert NOP (ADDI x0, x0, 0)
+        else if (Flush_E) begin // Insert NOP (ADDI x0, x0, 0) and set PC for clarity
             REG_W_En_E <= 1'h0; // Disable state changing signals
             MEM_W_En_E <= 1'h0;
             Jump_En_E <= 1'h0;
             Branch_En_E <= 1'h0;
-            MEM_Control_E <= 3'h0;
-            ALU_Control_E <= ALU_ADD; // ADDI x0, x0, 0 NOP
-            Branch_Src_Sel_E <= 1'h0;
-            ALU_SrcA_Sel_E <= 1'h0;
-            ALU_SrcB_Sel_E <= 1'h0;
-            Result_Src_Sel_E <= 2'h0;
-            RD_E <= 5'h0; // x0
-            RS1_E <= 5'h0; // x0
-            RS2_E <= 5'h0;
-            REG_R_Data1_E <= 32'h0;
-            REG_R_Data2_E <= 32'h0;
-            Imm_Ext_E <= 32'h0; // 0 immediate
             PC_E <= 32'h2A2A_2A2A; // Debug pattern for clarity
             PC_Plus_4_E <= 32'h2A2A_2A2A;
         end
