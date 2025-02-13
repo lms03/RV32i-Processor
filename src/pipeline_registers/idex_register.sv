@@ -31,6 +31,8 @@ module idex_register (
     // PC
     input wire [31:0] PC_D, PC_Plus_4_D,
 
+    // -----------------------------------------------------------
+    
     // Control unit signals
     output logic REG_W_En_E, MEM_W_En_E, Jump_En_E, Branch_En_E,
     output logic [2:0] MEM_Control_E,

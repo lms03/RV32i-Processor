@@ -22,6 +22,8 @@ module decode (
     input wire [31:0] Result_W,
     input wire [4:0] RD_W,
 
+    // -----------------------------------------------------------
+    
     // Control unit signals
     output wire REG_W_En_D, MEM_W_En_D, Jump_En_D, Branch_En_D,
     output wire [2:0] MEM_Control_D,

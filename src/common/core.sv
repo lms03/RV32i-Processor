@@ -39,4 +39,16 @@ module core (
         .PC_Plus_4_D(PC_Plus_4_D)
     );
 
+    decode decode (
+        
+    );
+
+    idex_register idex_reg (
+        
+    );
+
+    execute execute (
+        
+    );
+
 endmodule

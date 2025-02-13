@@ -138,8 +138,8 @@ module idex_pipeline_register_testbench ();
 
     // Assert enables resets to 0 (safe value) when reset is asserted
     assertRegisterResetEnables: assert property (@(posedge CLK) 
-        (RST == 1 |-> ##1 (REG_W_En_E == 1'b0 && MEM_W_En_E == 1'b0 && Jump_En_E == 1'b0 && Branch_En_E == 1'b0)))
-        else $error("Error: Register did not reset correctly, expected enable signals to be reset but got REG_W_En_E %h, MEM_W_En_E %h, Jump_En_E %h, Branch_En_E %h", 
+        ((RST == 1) |-> ##1 (REG_W_En_E == 1'b0 && MEM_W_En_E == 1'b0 && Jump_En_E == 1'b0 && Branch_En_E == 1'b0)))
+        else $error("Error: Register did not reset correctly, expected enable signals to be zero but got REG_W_En_E %h, MEM_W_En_E %h, Jump_En_E %h, Branch_En_E %h", 
             $sampled(REG_W_En_E), $sampled(MEM_W_En_E), $sampled(Jump_En_E), $sampled(Branch_En_E));
 
     // --------------------------------------------------------
@@ -147,10 +147,10 @@ module idex_pipeline_register_testbench ();
     // Assert register inserts a NOP when flush is asserted
     assertRegisterFlushEnables: assert property (@(posedge CLK) 
         ((RST == 0 && Flush_E == 1) |-> ##1 (REG_W_En_E == 1'b0 && MEM_W_En_E == 1'b0 && Jump_En_E == 1'b0 && Branch_En_E == 1'b0)))
-        else $error("Error: Register did not flush correctly, expected enable signals to be safe but got REG_W_En_E %h, MEM_W_En_E %h, Jump_En_E %h, Branch_En_E %h", 
+        else $error("Error: Register did not flush correctly, expected enable signals to be zero but got REG_W_En_E %h, MEM_W_En_E %h, Jump_En_E %h, Branch_En_E %h", 
             $sampled(REG_W_En_E), $sampled(MEM_W_En_E), $sampled(Jump_En_E), $sampled(Branch_En_E));
 
-    assertRegisterFlushOther: assert property (@(posedge CLK) 
+    assertRegisterFlushPC: assert property (@(posedge CLK) 
         ((RST == 0 && Flush_E == 1) |-> ##1 (PC_E == 32'h2A2A_2A2A && PC_Plus_4_E == 32'h2A2A_2A2A)))
         else $error("Error: Register did not flush correctly, expected PC to be 0x2A2A2A2A but got PC_E %h, PC_Plus_4_E %h", 
             $sampled(PC_E), $sampled(PC_Plus_4_E));

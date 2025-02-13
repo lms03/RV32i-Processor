@@ -25,7 +25,7 @@ module fetch (
         .PC_Out(PC_F)
     );
 
-    adder pc_adder (
+    adder32 pc_adder (
         .A(PC_F),
         .B(32'h4),
         .OUT(PC_Plus_4F)

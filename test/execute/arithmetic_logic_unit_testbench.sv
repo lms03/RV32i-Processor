@@ -72,35 +72,205 @@ module arithmetic_logic_unit_testbench;
         @(posedge CLK);
         assert (Result == 32'h7FFF_FFFF) else $error("Error: Incorrect result produced for overflow SUB test, expected 0x7FFFFFFF, got %h", $sampled(Result));
 
-        // Test ALU_AND
+        // Test AND operation
+        ALU_Control <= ALU_AND;
+        SrcA <= 32'h0000_0000;
+        SrcB <= 32'hFFFF_FFFF;
+        @(posedge CLK);
+        assert (Result == 32'h0000_0000) else $error("Error: Incorrect result produced for AND test, expected 0x00000000, got %h", $sampled(Result));
 
-        // Test ALU_OR
+        // Test AND operation with all bits set
+        ALU_Control <= ALU_AND;
+        SrcA <= 32'hFFFF_FFFF;
+        SrcB <= 32'hFFFF_FFFF;
+        @(posedge CLK);
+        assert (Result == 32'hFFFF_FFFF) else $error("Error: Incorrect result produced for AND test, expected 0xFFFFFFFF, got %h", $sampled(Result));
 
-        // Test ALU_XOR
+        // Test OR operation
+        ALU_Control <= ALU_OR;
+        SrcA <= 32'h0000_0000;
+        SrcB <= 32'hFFFF_FFFF;
+        @(posedge CLK);
+        assert (Result == 32'hFFFF_FFFF) else $error("Error: Incorrect result produced for OR test, expected 0xFFFFFFFF, got %h", $sampled(Result));
 
-        // Test ALU_SLL
+        // Test OR operation with all bits set
+        ALU_Control <= ALU_OR;
+        SrcA <= 32'hFFFF_FFFF;
+        SrcB <= 32'hFFFF_FFFF;
+        @(posedge CLK);
+        assert (Result == 32'hFFFF_FFFF) else $error("Error: Incorrect result produced for OR test, expected 0xFFFFFFFF, got %h", $sampled(Result));
 
-        // Test ALU_SRL
+        // Test OR operation with no bits set
+        ALU_Control <= ALU_OR;
+        SrcA <= 32'h0000_0000;
+        SrcB <= 32'h0000_0000;
+        @(posedge CLK);
+        assert (Result == 32'h0000_0000) else $error("Error: Incorrect result produced for OR test, expected 0x00000000, got %h", $sampled(Result));
 
-        // Test ALU_SRA
+        // Test XOR operation
+        ALU_Control <= ALU_XOR;
+        SrcA <= 32'h0000_0000;
+        SrcB <= 32'hFFFF_FFFF;
+        @(posedge CLK);
+        assert (Result == 32'hFFFF_FFFF) else $error("Error: Incorrect result produced for XOR test, expected 0xFFFFFFFF, got %h", $sampled(Result));
 
-        // Test ALU_BEQ
+        // Test XOR operation with all bits set
+        ALU_Control <= ALU_XOR;
+        SrcA <= 32'hFFFF_FFFF;
+        SrcB <= 32'hFFFF_FFFF;
+        @(posedge CLK);
+        assert (Result == 32'h0000_0000) else $error("Error: Incorrect result produced for XOR test, expected 0x00000000, got %h", $sampled(Result));
 
-        // Test ALU_BNE
+        // Test XOR operation with no bits set
+        ALU_Control <= ALU_XOR;
+        SrcA <= 32'h0000_0000;
+        SrcB <= 32'h0000_0000;
+        @(posedge CLK);
+        assert (Result == 32'h0000_0000) else $error("Error: Incorrect result produced for XOR test, expected 0x00000000, got %h", $sampled(Result));
 
-        // Test ALU_BLT
+        // Test SLL operation
+        ALU_Control <= ALU_SLL;
+        SrcA <= 32'hF0F0_F0F0;
+        SrcB <= 32'h0000_0004;
+        @(posedge CLK);
+        assert (Result == 32'h0F0F_0F00) else $error("Error: Incorrect result produced for SLL test, expected 0x0F0F0F00, got %h", $sampled(Result));
 
-        // Test ALU_BLTU
-        
-        // Test ALU_BGE
+        // Check SLL operation multiplies
+        ALU_Control <= ALU_SLL;
+        SrcA <= 32'h0000_0001;
+        SrcB <= 32'h0000_0002; // 2^2 = 4
+        @(posedge CLK);
+        assert (Result == 32'h0000_0004) else $error("Error: Incorrect result produced for SLL multiply test, expected 0x00000004, got %h", $sampled(Result));
 
-        // Test ALU_BGEU
+        // Test SRL operation
+        ALU_Control <= ALU_SRL;
+        SrcA <= 32'hF0F0_F0F0;
+        SrcB <= 32'h0000_0004;
+        @(posedge CLK);
+        assert (Result == 32'h0F0F_0F0F) else $error("Error: Incorrect result produced for SRL test, expected 0x0F0F0F0F, got %h", $sampled(Result));
 
-        // Test ALU_LUI
+        // Check SRL operation divides
+        ALU_Control <= ALU_SRL;
+        SrcA <= 32'h0000_0010; 
+        SrcB <= 32'h0000_0001; // 2^1 = 2
+        @(posedge CLK);
+        assert (Result == 32'h0000_0008) else $error("Error: Incorrect result produced for SRL divide test, expected 0x00000008, got %h", $sampled(Result));
 
-        // Test 
+        // Test SLL followed by SRL is the same
+        ALU_Control <= ALU_SLL;
+        SrcA <= 32'h0000_0001;
+        SrcB <= 32'h0000_0001;
+        @(posedge CLK);
+        ALU_Control <= ALU_SRL;
+        SrcA <= Result;
+        SrcB <= 32'h0000_0001;
+        @(posedge CLK);
+        assert (Result == 32'h0000_0001) else $error("Error: Incorrect result produced for SLL/SRL test, expected 0x00000001, got %h", $sampled(Result));
+
+        // Test SRA operation
+        ALU_Control <= ALU_SRA;
+        SrcA <= 32'hFFFF_FFFF;
+        SrcB <= 32'h7FFF_FFFF;
+        @(posedge CLK);
+        assert (Result == 32'hFFFF_FFFF) else $error("Error: Incorrect result produced for SRA test, expected 0xFFFFFFFF, got %h", $sampled(Result));
+
+        // Test passing BEQ
+        ALU_Control <= ALU_BEQ;
+        SrcA <= 32'hFFFF_FFFF;
+        SrcB <= 32'hFFFF_FFFF;
+        @(posedge CLK);
+        assert (Branch_Condition == 1'b1) else $error("Error: Incorrect result produced for passing BEQ test, expected 1, got %h", $sampled(Branch_Condition));
+
+        // Test failing BEQ
+        ALU_Control <= ALU_BEQ;
+        SrcA <= 32'hFFFF_FFFF;
+        SrcB <= 32'h0000_0000;
+        @(posedge CLK);
+        assert (Branch_Condition == 1'b0) else $error("Error: Incorrect result produced for failing BEQ test, expected 0, got %h", $sampled(Branch_Condition));
+
+        // Test passing BNE
+        ALU_Control <= ALU_BNE;
+        SrcA <= 32'hFFFF_FFFF;
+        SrcB <= 32'h0000_0000;
+        @(posedge CLK);
+        assert (Branch_Condition == 1'b1) else $error("Error: Incorrect result produced for passing BNE test, expected 1, got %h", $sampled(Branch_Condition));
+
+        // Test failing BNE
+        ALU_Control <= ALU_BNE;
+        SrcA <= 32'hFFFF_FFFF;
+        SrcB <= 32'hFFFF_FFFF;
+        @(posedge CLK);
+        assert (Branch_Condition == 1'b0) else $error("Error: Incorrect result produced for failing BNE test, expected 0, got %h", $sampled(Branch_Condition));
+
+        // Test passing BLT
+        ALU_Control <= ALU_BLT;
+        SrcA <= 32'hFFFF_FFFF;
+        SrcB <= 32'h0000_0000;
+        @(posedge CLK);
+        assert (Branch_Condition == 1'b1 && Result == 32'h0000_0001) else $error("Error: Incorrect result produced for passing BLT test, expected taken 1, got %h, result (SLT) 0x00000001, got %h", $sampled(Branch_Condition), $sampled(Result));
+
+        // Test failing BLT
+        ALU_Control <= ALU_BLT;
+        SrcA <= 32'h0000_0000;
+        SrcB <= 32'h0000_0000;
+        @(posedge CLK);
+        assert (Branch_Condition == 1'b0 && Result == 32'h0000_0000) else $error("Error: Incorrect result produced for failing BLT test, expected taken 0, got %h, result (SLT) 0x00000000, got %h", $sampled(Branch_Condition), $sampled(Result));
+
+        // Test passing BLTU
+        ALU_Control <= ALU_BLTU;
+        SrcA <= 32'h0000_0000;
+        SrcB <= 32'hFFFF_FFFF;
+        @(posedge CLK);
+        assert (Branch_Condition == 1'b1 && Result == 32'h0000_0001) else $error("Error: Incorrect result produced for passing BLTU test, expected taken 1, got %h, result (SLTU) 0x00000001, got %h", $sampled(Branch_Condition), $sampled(Result));
+
+        // Test failing BLTU
+        ALU_Control <= ALU_BLTU;
+        SrcA <= 32'hFFFF_FFFF;
+        SrcB <= 32'h0000_0000;
+        @(posedge CLK);
+        assert (Branch_Condition == 1'b0 && Result == 32'h0000_0000) else $error("Error: Incorrect result produced for failing BLTU test, expected taken 0, got %h, result (SLTU) 0x00000000, got %h", $sampled(Branch_Condition), $sampled(Result));
+
+        // Test passing BGE
+        ALU_Control <= ALU_BGE;
+        SrcA <= 32'h0000_0000;
+        SrcB <= 32'hFFFF_FFFF;
+        @(posedge CLK);
+        assert (Branch_Condition == 1'b1) else $error("Error: Incorrect result produced for passing BGE test, expected 1, got %h", $sampled(Branch_Condition));
+
+        // Test failing BGE
+        ALU_Control <= ALU_BGE;
+        SrcA <= 32'h0000_0000;
+        SrcB <= 32'h0000_0001;
+        @(posedge CLK);
+        assert (Branch_Condition == 1'b0) else $error("Error: Incorrect result produced for failing BGE test, expected 0, got %h", $sampled(Branch_Condition));
+
+        // Test passing BGEU
+        ALU_Control <= ALU_BGEU;
+        SrcA <= 32'hFFFF_FFFF;
+        SrcB <= 32'h0000_0000;
+        @(posedge CLK);
+        assert (Branch_Condition == 1'b1) else $error("Error: Incorrect result produced for passing BGEU test, expected 1, got %h", $sampled(Branch_Condition));
+
+        // Test failing BGEU
+        ALU_Control <= ALU_BGEU;
+        SrcA <= 32'h0000_0000;
+        SrcB <= 32'hFFFF_FFFF;
+        @(posedge CLK);
+        assert (Branch_Condition == 1'b0) else $error("Error: Incorrect result produced for failing BGEU test, expected 0, got %h", $sampled(Branch_Condition));
+
+        // Test LUI takes SrcB value
+        ALU_Control <= ALU_LUI;
+        SrcA <= 32'h0000_0000;
+        SrcB <= 32'hFFFF_FFFF;
+        @(posedge CLK);
+        assert (Result == 32'hFFFF_FFFF) else $error("Error: Incorrect result produced for LUI test, expected 0xFFFFFFFF, got %h", $sampled(Branch_Condition));
+
+        // Test LUI takes different SrcB value
+        ALU_Control <= ALU_LUI;
+        SrcA <= 32'h0000_0000;
+        SrcB <= 32'hF0F0_F0F0;
+        @(posedge CLK);
+        assert (Result == 32'hF0F0_F0F0) else $error("Error: Incorrect result produced for LUI test, expected 0xF0F0F0F0, got %h", $sampled(Branch_Condition));
         $stop; 
     end
-
-
 endmodule

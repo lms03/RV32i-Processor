@@ -11,25 +11,68 @@ import definitions::*;
 
 module execute (
     // Control unit signals
-    input wire REG_W_En_E, MEM_W_En_E, Jump_En_E, Branch_En_E,
-    input wire [2:0] MEM_Control_E,
+    input wire Jump_En_E, Branch_En_E,
     input wire [3:0] ALU_Control_E,
     input wire Branch_Src_Sel_E,
     input wire ALU_SrcA_Sel_E, ALU_SrcB_Sel_E,
-    input wire [1:0] Result_Src_Sel_E,
 
     // Register data
-    input wire [4:0] RD_E, RS1_E, RS2_E,
     input wire [31:0] REG_R_Data1_E, REG_R_Data2_E,
 
     // Extended Immediate
     input wire [31:0] Imm_Ext_E,
 
     // PC
-    input wire [31:0] PC_E, PC_Plus_4_E
+    input wire [31:0] PC_E,
+
+    // -----------------------------------------------------------
+    
+    // Outputs
+    output wire Branch_Taken_E,
+    output wire [31:0] ALU_Out_E,
+    output wire [31:0] PC_Target_E
     );
 
+    wire [31:0] SrcA, SrcB;
+    wire Branch_Out;
+    wire [31:0] Branch_Src;
 
+    arithmetic_logic_unit alu (
+        .ALU_Control(ALU_Control_E),
+        .SrcA(SrcA),
+        .SrcB(SrcB),
+        .Result(ALU_Out_E),
+        .Branch_Condition(Branch_Out)
+    );
+
+    mux2_1 mux2_1_srca (
+        .SEL(ALU_SrcA_Sel_E),
+        .IN1(REG_R_Data1_E), // Replace later with output from forwarding mux
+        .IN2(PC_E),
+        .OUT(SrcA)
+    );
+
+    mux2_1 mux2_1_srcb (
+        .SEL(ALU_SrcB_Sel_E),
+        .IN1(REG_R_Data2_E), // Replace later with output from forwarding mux
+        .IN2(Imm_Ext_E),
+        .OUT(SrcB)
+    );
+
+    mux2_1 mux2_1_branch (
+        .SEL(Branch_Src_Sel_E),
+        .IN1(PC_E), 
+        .IN2(REG_R_Data1_E),
+        .OUT(Branch_Src)
+    );
+
+    adder32 target_adder (
+        .A(Branch_Src),
+        .B(Imm_Ext_E),
+        .OUT(PC_Target_E)
+    );
+
+    assign Branch_Taken_E = Jump_En_E | (Branch_En_E & Branch_Out);
 endmodule
 
 module arithmetic_logic_unit (
@@ -41,6 +84,8 @@ module arithmetic_logic_unit (
     
     // ALU operations
     always_comb begin
+        Result = 32'h0; // Default values
+        Branch_Condition = 1'b0;
         case (ALU_Control)
             ALU_ADD: Result = SrcA + SrcB;
             ALU_SUB: Result = SrcA - SrcB;
@@ -49,7 +94,7 @@ module arithmetic_logic_unit (
             ALU_XOR: Result = SrcA ^ SrcB;
             ALU_SLL: Result = SrcA << SrcB;
             ALU_SRL: Result = SrcA >> SrcB;
-            ALU_SRA: Result = SrcA >>> SrcB;
+            ALU_SRA: Result = $signed(SrcA) >>> SrcB;
             ALU_BEQ: 
                 begin
                     if (SrcA == SrcB) Branch_Condition = 1'b1;
