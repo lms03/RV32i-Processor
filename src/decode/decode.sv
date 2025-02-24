@@ -14,7 +14,7 @@
 import definitions::*;
 
 module decode (
-    input wire CLK, RST, 
+    input wire CLK, 
     input wire [31:0] Instr_D,
 
     // Signals from writeback
@@ -61,7 +61,6 @@ module decode (
 
     register_file reg_file (
         .CLK(CLK),
-        .RST(RST),
         .REG_W_En(REG_W_En_W),  
         .REG_R_Addr1(Instr_D[19:15]),
         .REG_R_Addr2(Instr_D[24:20]),
@@ -244,7 +243,7 @@ module control_unit (
 endmodule
 
 module register_file (
-    input wire CLK, RST, REG_W_En,
+    input wire CLK, REG_W_En,
     input wire [4:0] REG_R_Addr1, REG_R_Addr2, REG_W_Addr,
     input wire [31:0] REG_W_Data,
     output logic [31:0] REG_R_Data1, REG_R_Data2
@@ -252,13 +251,10 @@ module register_file (
 
     reg [31:0] registers [0:31];
 
-    always_ff @ (posedge CLK) begin
-        if (RST) begin
-            for (int i = 0; i < 32; i++)
-                registers[i] <= 32'h0;
-        end
-        else if (REG_W_En && REG_W_Addr != 5'h0) // Prevent write to x0
+    always_ff @ (negedge CLK) begin // Write on falling edge to allow read by the time the rising edge comes
+        if (REG_W_En && REG_W_Addr != 5'h0) // Prevent write to x0
             registers[REG_W_Addr] <= REG_W_Data;
+        registers[0] <= 32'h0000_0000; // Ensure x0 is always 0, necessary in the absence of a reset signal
     end
 
     always_comb begin

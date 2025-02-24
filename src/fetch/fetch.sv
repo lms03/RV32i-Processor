@@ -9,8 +9,10 @@
 //                  Holds the program for the processor to execute 
 //                  and outputs the instruction pointed to by the PC.  
 // Author: Luke Shepherd                                                     
-// Date Modified: January 2025                                                                                                                                                                                                                                                       
+// Date Modified: February 2025                                                                                                                                                                                                                                                       
 //////////////////////////////////////////////////////////////////////////////////
+
+import definitions::*;
 
 module fetch (
     input wire CLK, RST, PC_En,

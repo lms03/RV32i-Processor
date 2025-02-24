@@ -9,14 +9,13 @@
 import definitions::*;
 
 module register_file_testbench;
-    logic CLK, RST, REG_W_En;
+    logic CLK, REG_W_En;
     logic [4:0] REG_R_Addr1, REG_R_Addr2, REG_W_Addr;
     logic [31:0] REG_W_Data;
     logic [31:0] REG_R_Data1, REG_R_Data2;
 
     register_file regfile (
         .CLK(CLK),
-        .RST(RST),
         .REG_W_En(REG_W_En),
         .REG_R_Addr1(REG_R_Addr1),
         .REG_R_Addr2(REG_R_Addr2),
@@ -33,23 +32,14 @@ module register_file_testbench;
 
     initial begin
         @(posedge CLK); // Wait for first posedge before starting
-        RST <= 1; // Assert reset
-        REG_W_En <= 0; // Disable write
         // Initialize signals
+        REG_W_En <= 0; // Disable write
         REG_R_Addr1 <= 0; 
         REG_R_Addr2 <= 0;
         REG_W_Addr <= 0;
         REG_W_Data <= 0;
-        @(posedge CLK); // Wait for next posedge to allow reset to happen
-        RST <= 0; // Deassert reset
+        @(posedge CLK); // Wait for next posedge to allow signals to pass
 
-        // Assert that all registers are reset to 0
-        for (int i = 0; i < 32; i++) begin
-            REG_R_Addr1 <= i; // Read from each register
-            @(posedge CLK);
-            assert (REG_R_Data1 == 32'h0000_0000) 
-                else $error("Error: Register %h did not reset correctly, expected %h, got %h", i, 32'h0000_0000, $sampled(REG_R_Data1));
-        end
 
         // Write to interesting registers
         // Assert that writing to x0 does not change it
