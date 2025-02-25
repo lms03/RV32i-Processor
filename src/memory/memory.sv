@@ -16,7 +16,7 @@ endmodule
 module data_memory (
     input wire CLK, MEM_W_En, 
     input wire [2:0] MEM_Control,
-    input wire [31:0] RW_Addr, W_Data,
+    input wire [31:0] RW_Addr, W_Data, // Consider declaring RW_Addr as 8 bits
     output logic [31:0] Data_Out
     );
 

@@ -254,12 +254,11 @@ module register_file (
     always_ff @ (negedge CLK) begin // Write on falling edge to allow read by the time the rising edge comes
         if (REG_W_En && REG_W_Addr != 5'h0) // Prevent write to x0
             registers[REG_W_Addr] <= REG_W_Data;
-        registers[0] <= 32'h0000_0000; // Ensure x0 is always 0, necessary in the absence of a reset signal
     end
 
     always_comb begin
-        REG_R_Data1 = registers[REG_R_Addr1];
-        REG_R_Data2 = registers[REG_R_Addr2];  
+        REG_R_Data1 = (REG_R_Addr1 != 0) ? registers[REG_R_Addr1] : 32'b0; // Ensure x0 is always read as 0, necessary in the absence of a reset signal
+        REG_R_Data2 = (REG_R_Addr2 != 0) ? registers[REG_R_Addr2] : 32'b0;  
     end    
 endmodule
 

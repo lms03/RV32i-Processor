@@ -55,14 +55,14 @@ module data_memory_testbench;
         W_Data <= 32'hFAAF_FAAF; 
         @(posedge CLK);
         @(posedge CLK);
-        assert (dmem.memory[4] == 32'hFAAF_FAAF) else $error("Error: Unit did not store word correctly, expected 0xFAAFFAAF, got %h", $sampled(dmem.memory[2]));
-        // FIX THIS!!!!!!!!!!!
+        assert (dmem.memory[7] == 8'hFA && dmem.memory[6] == 8'hAF && dmem.memory[5] == 8'hFA && dmem.memory[4] == 8'hAF) else $error("Error: Unit did not store word correctly, expected 0xFAAFFAAF, got %h %h %h %h", $sampled(dmem.memory[7]), $sampled(dmem.memory[6]), $sampled(dmem.memory[5]), $sampled(dmem.memory[4]));
 
         // Test Load Byte
         MEM_W_En <= 0;
         MEM_Control <= MEM_BYTE;
         RW_Addr <= 32'h0000_0000;
-        @(posedge CLK);
+        @(posedge CLK); // Clock to set up inputs
+        @(posedge CLK); // Clock again to load
         assert (Data_Out == 32'hFFFF_FFFF) else $error("Error: Unit did not load signed byte correctly, expected 0xFFFFFFFF, got %h", $sampled(Data_Out));
 
         // Test Load Byte Unsigned
@@ -70,26 +70,30 @@ module data_memory_testbench;
         MEM_Control <= MEM_BYTE_UNSIGNED;
         RW_Addr <= 32'h0000_0000;
         @(posedge CLK);
+        @(posedge CLK);
         assert (Data_Out == 32'h0000_00FF) else $error("Error: Unit did not load unsigned byte correctly, expected 0x000000FF, got %h", $sampled(Data_Out));
 
         // Test Load Halfword
         MEM_W_En <= 0;
         MEM_Control <= MEM_HALFWORD;
-        RW_Addr <= 32'h0000_0001;
+        RW_Addr <= 32'h0000_0002;
+        @(posedge CLK);
         @(posedge CLK);
         assert (Data_Out == 32'hFFFF_F00F) else $error("Error: Unit did not load signed halfword correctly, expected 0xFFFFF00F, got %h", $sampled(Data_Out));
 
         // Test Load Halfword Unsigned
         MEM_W_En <= 0;
         MEM_Control <= MEM_HALFWORD_UNSIGNED;
-        RW_Addr <= 32'h0000_0001;
+        RW_Addr <= 32'h0000_0002;
+        @(posedge CLK);
         @(posedge CLK);
         assert (Data_Out == 32'h0000_F00F) else $error("Error: Unit did not load unsigned halfword correctly, expected 0x0000F00F, got %h", $sampled(Data_Out));
 
         // Test Load Word
         MEM_W_En <= 0;
         MEM_Control <= MEM_WORD;
-        RW_Addr <= 32'h0000_0002;
+        RW_Addr <= 32'h0000_0004;
+        @(posedge CLK);
         @(posedge CLK);
         assert (Data_Out == 32'hFAAF_FAAF) else $error("Error: Unit did not load unsigned halfword correctly, expected 0xFAAFFAAF, got %h", $sampled(Data_Out));
         
@@ -98,18 +102,19 @@ module data_memory_testbench;
     end
 
     task operate(); begin
-        for (int i = 0; i < 256; i++) begin
+        for (int i = 0; i < 256; i += 4) begin
             MEM_W_En <= 1;
             MEM_Control <= MEM_WORD;
-            RW_Addr <= i;
+            RW_Addr <= i; 
             W_Data <= i;
             @(posedge CLK);
         end
-        for (int i = 0; i < 256; i++) begin
+        for (int i = 0; i < 256; i += 4) begin
             MEM_W_En <= 0;
             MEM_Control <= MEM_WORD;
-            RW_Addr <= i;
-            @(posedge CLK);
+            RW_Addr <= i; 
+            @(posedge CLK); // Set up 
+            @(posedge CLK); // Clock to allow read to happen
             assert (Data_Out == i) else $error("Error: Unit did not store and load correctly, expected %d, got %h", i, $sampled(Data_Out)); 
         end
     end
