@@ -9,7 +9,7 @@
 
 import definitions::*;
 
-module exmem_register (
+module memwb_register (
     // Global control signals
     input wire CLK, RST,
 
@@ -51,7 +51,6 @@ module exmem_register (
     always_ff @ (posedge CLK) begin // Synchronous reset 
         if (RST) begin // Ensure a safe state
             REG_W_En_W <= 1'h0;
-            MEM_W_En_W <= 1'h0;
         end
         else begin
             REG_W_En_W <= REG_W_En_M;
