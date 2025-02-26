@@ -84,7 +84,7 @@ module arithmetic_logic_unit (
     
     // ALU operations
     always_comb begin
-        Result = 32'h0; // Default values
+        Result = 32'b0; // Default values
         Branch_Condition = 1'b0;
         case (ALU_Control)
             ALU_ADD: Result = SrcA + SrcB;
@@ -110,12 +110,12 @@ module arithmetic_logic_unit (
                     if ($signed(SrcA) < $signed(SrcB)) 
                     begin 
                         Branch_Condition = 1'b1;
-                        Result = 32'h1; // Result for SLT
+                        Result = 32'b1; // Result for SLT
                     end
                     else 
                     begin 
                         Branch_Condition = 1'b0;
-                        Result = 32'h0; // Result for SLT
+                        Result = 32'b0; // Result for SLT
                     end
                 end
             ALU_BLTU: 
@@ -123,12 +123,12 @@ module arithmetic_logic_unit (
                     if (SrcA < SrcB) 
                     begin  
                         Branch_Condition = 1'b1;
-                        Result = 32'h1; // Result for SLTU
+                        Result = 32'b1; // Result for SLTU
                     end
                     else 
                     begin 
                         Branch_Condition = 1'b0;
-                        Result = 32'h0; // Result for SLTU
+                        Result = 32'b0; // Result for SLTU
                     end
                 end
             ALU_BGE: 
@@ -142,7 +142,7 @@ module arithmetic_logic_unit (
                     else Branch_Condition = 1'b0;
                 end
             ALU_LUI: Result = SrcB;
-            default: Result = 32'hX; // Propagate X to indicate error
+            default: Result = 32'bX; // Propagate X to indicate error
         endcase
     end
 endmodule

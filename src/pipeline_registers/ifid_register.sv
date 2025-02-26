@@ -15,9 +15,9 @@ module ifid_register (
 
     always_ff @ (posedge CLK) begin // Synchronous flush and reset
         if (RST) begin
-            Instr_D <= 32'h0;
-            PC_D <= 32'h0;
-            PC_Plus_4_D <= 32'h0;
+            Instr_D <= 32'b0;
+            PC_D <= 32'b0;
+            PC_Plus_4_D <= 32'b0;
         end
         else if (Flush_D) begin // Insert NOP (ADDI x0, x0, 0)
             Instr_D <= 32'h0000_0013;

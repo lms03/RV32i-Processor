@@ -63,7 +63,7 @@ module immediate_extender_testbench;
                 assert (Imm_Ext[31] == Instr[31]) else $error("Error: Incorrect sign produced, expected %h, got %h", $sampled(Instr[31]), $sampled(Imm_Ext[31]));
                 case(Imm_Type_Sel)
                     IMM_I, IMM_S, IMM_B: assert (Imm_Ext[31:12] == {20{Instr[31]}}) else $error("Error: Incorrect extension produced, expected %h, got %h", {20{Instr[31]}}, $sampled(Imm_Ext[31:12]));
-                    IMM_U: assert (Imm_Ext[11:0] == 12'h0) else $error("Error: Incorrect extension produced, expected %h, got %h", 12'h0 ,$sampled(Imm_Ext[11:0]));
+                    IMM_U: assert (Imm_Ext[11:0] == 12'b0) else $error("Error: Incorrect extension produced, expected %h, got %h", 12'b0 ,$sampled(Imm_Ext[11:0]));
                     IMM_J: assert (Imm_Ext[31:20] == {12{Instr[31]}}) else $error("Error: Incorrect extension produced, expected %h, got %h", {12{Instr[31]}}, $sampled(Imm_Ext[31:20])); 
                     default: $error("Error: Test should not reach this, R-Type does not exist in immediate extender");
                 endcase

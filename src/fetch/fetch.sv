@@ -48,7 +48,7 @@ module program_counter (
 
     always_ff @ (posedge CLK) begin // Synchronous reset
         if (RST)
-            PC_Out <= 32'h0;
+            PC_Out <= 32'b0;
         else if (PC_En)             
             PC_Out <= PC_In;           
     end

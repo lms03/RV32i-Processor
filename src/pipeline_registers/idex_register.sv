@@ -54,16 +54,16 @@ module idex_register (
 
     always_ff @ (posedge CLK) begin // Synchronous flush and reset 
         if (RST) begin // Ensure a safe state
-            REG_W_En_E <= 1'h0; 
-            MEM_W_En_E <= 1'h0;
-            Jump_En_E <= 1'h0;
-            Branch_En_E <= 1'h0;
+            REG_W_En_E <= 1'b0; 
+            MEM_W_En_E <= 1'b0;
+            Jump_En_E <= 1'b0;
+            Branch_En_E <= 1'b0;
         end
         else if (Flush_E) begin // Insert NOP (ADDI x0, x0, 0) and set PC for clarity
-            REG_W_En_E <= 1'h0; // Disable state changing signals
-            MEM_W_En_E <= 1'h0;
-            Jump_En_E <= 1'h0;
-            Branch_En_E <= 1'h0;
+            REG_W_En_E <= 1'b0; // Disable state changing signals
+            MEM_W_En_E <= 1'b0;
+            Jump_En_E <= 1'b0;
+            Branch_En_E <= 1'b0;
             PC_E <= 32'h2A2A_2A2A; // Debug pattern for clarity
             PC_Plus_4_E <= 32'h2A2A_2A2A;
         end

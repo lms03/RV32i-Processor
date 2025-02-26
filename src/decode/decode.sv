@@ -126,7 +126,7 @@ module control_unit (
                         F3_R_SRL_SRA: ALU_Control = (Func7 == F7_R_SRL) ? ALU_SRL : ALU_SRA;
                         F3_R_OR: ALU_Control = ALU_OR; 
                         F3_R_AND: ALU_Control = ALU_AND; 
-                        default: ALU_Control = 4'hX; // Propagate X to highlight error
+                        default: ALU_Control = 4'bX; // Propagate X to highlight error
                     endcase
                 end
             OP_I_TYPE_LOAD, OP_JALR, OP_I_TYPE:
@@ -151,7 +151,7 @@ module control_unit (
                                         MEM_Control = MEM_BYTE; // Specify byte load for LB
                                         ALU_Control = ALU_ADD; // Load address calculation uses same operation as ADDI
                                     end
-                                default: ALU_Control = 4'hX; // Propagate X to highlight error
+                                default: ALU_Control = 4'bX; // Propagate X to highlight error
                             endcase
                         F3_I_LH_SLLI: // LH or SLLI
                             begin
@@ -176,7 +176,7 @@ module control_unit (
                             end
                         F3_I_ORI: ALU_Control = ALU_OR; // ORI
                         F3_I_ANDI: ALU_Control = ALU_AND; // ANDI
-                        default: ALU_Control = 4'hX; // Propagate X to highlight error
+                        default: ALU_Control = 4'bX; // Propagate X to highlight error
                     endcase
                 end
             OP_S_TYPE:
@@ -209,7 +209,7 @@ module control_unit (
                         F3_B_BGE: ALU_Control = ALU_BGE; 
                         F3_B_BLTU: ALU_Control = ALU_BLTU; 
                         F3_B_BGEU: ALU_Control = ALU_BGEU; 
-                        default: ALU_Control = 4'hX; // Propagate X to highlight error
+                        default: ALU_Control = 4'bX; // Propagate X to highlight error
                     endcase
                 end
             OP_LUI, OP_AUIPC:
@@ -251,14 +251,14 @@ module register_file (
 
     reg [31:0] registers [0:31];
 
-    always_ff @ (negedge CLK) begin // Write on falling edge to allow read by the time the rising edge comes
-        if (REG_W_En && REG_W_Addr != 5'h0) // Prevent write to x0
+    always_ff @ (posedge CLK) begin 
+        if (REG_W_En && REG_W_Addr != 5'b0) // Prevent write to x0
             registers[REG_W_Addr] <= REG_W_Data;
     end
 
-    always_comb begin
-        REG_R_Data1 = (REG_R_Addr1 != 0) ? registers[REG_R_Addr1] : 32'b0; // Ensure x0 is always read as 0, necessary in the absence of a reset signal
-        REG_R_Data2 = (REG_R_Addr2 != 0) ? registers[REG_R_Addr2] : 32'b0;  
+    always_comb begin // Using internal forwarding for reads
+        REG_R_Data1 = (REG_R_Addr1 == 5'b0) ? 32'b0 : (REG_W_En && (REG_R_Addr1 == REG_W_Addr)) ? REG_W_Data : registers[REG_R_Addr1];
+        REG_R_Data2 = (REG_R_Addr2 == 5'b0) ? 32'b0 : (REG_W_En && (REG_R_Addr2 == REG_W_Addr)) ? REG_W_Data : registers[REG_R_Addr2];
     end    
 endmodule
 
@@ -273,9 +273,9 @@ module immediate_extender (
             IMM_I: Imm_Ext = {{21{Instr[31]}}, Instr[30:20]}; // Sign extend 12-bit immediate using the MSB
             IMM_S: Imm_Ext = {{21{Instr[31]}}, Instr[30:25], Instr[11:7]}; // Sign extend 12-bit broken up immediate using the MSB
             IMM_B: Imm_Ext = {{20{Instr[31]}}, Instr[7], Instr[30:25], Instr[11:8], 1'b0}; // Sign extend 12-bit broken up immediate using the MSB in B-Type format
-            IMM_U: Imm_Ext = {Instr[31:12], 12'h0}; // Zero extend 20-bit immediate
+            IMM_U: Imm_Ext = {Instr[31:12], 12'b0}; // Zero extend 20-bit immediate
             IMM_J: Imm_Ext = {{12{Instr[31]}}, Instr[19:12], Instr[20], Instr[30:21], 1'b0}; // Sign extend 20-bit immediate using the MSB in J-Type format
-            default: Imm_Ext = 32'hX; // Propagate X to highlight error (Consider replacing for synthesis)
+            default: Imm_Ext = 32'bX; // Propagate X to highlight error (Consider replacing for synthesis)
         endcase
     end
 endmodule

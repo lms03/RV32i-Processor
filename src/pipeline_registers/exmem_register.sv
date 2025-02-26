@@ -48,8 +48,8 @@ module exmem_register (
 
     always_ff @ (posedge CLK) begin // Synchronous reset 
         if (RST) begin // Ensure a safe state
-            REG_W_En_M <= 1'h0;
-            MEM_W_En_M <= 1'h0;
+            REG_W_En_M <= 1'b0;
+            MEM_W_En_M <= 1'b0;
         end
         else begin
             REG_W_En_M <= REG_W_En_E;
