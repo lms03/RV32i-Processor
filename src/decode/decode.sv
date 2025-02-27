@@ -136,7 +136,7 @@ module control_unit (
                     ALU_SrcA_Sel = SRCA_REG; // Select register data
                     ALU_SrcB_Sel = SRCB_IMM; // Select the immediate   
                     Imm_Type_Sel = IMM_I; // I-Type immediate  
-                    Result_Src_Sel = RESULT_ALU; // Changed depending on if JALR or not but default to reduce repetition
+                    Result_Src_Sel = RESULT_ALU; // Changed depending on if JALR/LOAD or not but default to reduce repetition
                     case (Func3)
                         F3_I_JALR_ADDI_LB: // JALR, ADDI or LB
                             case (OP)
@@ -148,6 +148,7 @@ module control_unit (
                                     end
                                 OP_I_TYPE, OP_I_TYPE_LOAD:  // ADDI and LB
                                     begin
+                                        Result_Src_Sel = (OP == OP_I_TYPE_LOAD) ? RESULT_MEM : RESULT_ALU; // LOAD uses memory, ADDI uses ALU
                                         MEM_Control = MEM_BYTE; // Specify byte load for LB
                                         ALU_Control = ALU_ADD; // Load address calculation uses same operation as ADDI
                                     end
@@ -155,22 +156,26 @@ module control_unit (
                             endcase
                         F3_I_LH_SLLI: // LH or SLLI
                             begin
+                                Result_Src_Sel = (OP == OP_I_TYPE_LOAD) ? RESULT_MEM : RESULT_ALU; // LOAD uses memory, SLLI uses ALU
                                 ALU_Control = (OP == OP_I_TYPE_LOAD) ? ALU_ADD : ALU_SLL;
                                 MEM_Control = MEM_HALFWORD; // Specify halfword load
                             end
                         F3_I_LW_SLTI: // LW or SLTI
                             begin
+                                Result_Src_Sel = (OP == OP_I_TYPE_LOAD) ? RESULT_MEM : RESULT_ALU; 
                                 ALU_Control = (OP == OP_I_TYPE_LOAD) ? ALU_ADD : ALU_BLT; // SLTI uses same as BLT
                                 MEM_Control = MEM_WORD; // Specify word load
                             end
                         F3_I_SLTIU: ALU_Control = ALU_BLTU; // SLTIU uses same as BLTU
                         F3_I_LBU_XORI: // LBU or XORI
                             begin
+                                Result_Src_Sel = (OP == OP_I_TYPE_LOAD) ? RESULT_MEM : RESULT_ALU; 
                                 ALU_Control = (OP == OP_I_TYPE_LOAD) ? ALU_ADD : ALU_XOR;
                                 MEM_Control = MEM_BYTE_UNSIGNED; // Specify byte unsigned load
                             end
                         F3_I_LHU_SRLI_SRAI: // LHU or SRLI or SRAI
                             begin
+                                Result_Src_Sel = (OP == OP_I_TYPE_LOAD) ? RESULT_MEM : RESULT_ALU; 
                                 ALU_Control = (OP == OP_I_TYPE_LOAD) ? ALU_ADD : ((Func7 == F7_I_SRLI) ? ALU_SRL : ALU_SRA);
                                 MEM_Control = MEM_HALFWORD; // Specify halfword unsigned load
                             end

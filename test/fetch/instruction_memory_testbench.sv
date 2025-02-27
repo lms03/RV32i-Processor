@@ -6,7 +6,7 @@
 // Date Modified: February 2025                                                                                                                                                                                                                                                       
 //////////////////////////////////////////////////////////////////////////////////
 
-import definitions::CLOCK_PERIOD;
+import definitions::*;
 
 module instruction_memory_testbench;
     logic CLK; // Wrap module with a clock to better represent the outside system

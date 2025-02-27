@@ -6,7 +6,7 @@
 // Date Modified: February 2025                                                                                                                                                                                                                                                 
 //////////////////////////////////////////////////////////////////////////////////
 
-import definitions::CLOCK_PERIOD;
+import definitions::*;
 
 module program_counter_testbench ();
     logic CLK;

@@ -66,7 +66,7 @@ module control_unit_testbench;
         // Test load instruction
         Instr <= 32'h4087_2183; //  LW
         @(posedge CLK);
-        check_signals(1, 0, 0, 0, MEM_WORD, ALU_ADD, IMM_I, BRANCH_PC, SRCA_REG, SRCB_IMM, RESULT_ALU);
+        check_signals(1, 0, 0, 0, MEM_WORD, ALU_ADD, IMM_I, BRANCH_PC, SRCA_REG, SRCB_IMM, RESULT_MEM);
 
         // Test store instruction
         Instr <= 32'h4087_01A3; //  SB
