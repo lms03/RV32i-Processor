@@ -23,18 +23,18 @@ module fetch (
         .CLK(CLK),
         .RST(RST),
         .PC_En(PC_En),
-        .PC_In(PC_Plus_4F),
+        .PC_In(PC_Plus_4_F),
         .PC_Out(PC_F)
     );
 
     adder32 pc_adder (
         .A(PC_F),
         .B(32'h4),
-        .OUT(PC_Plus_4F)
+        .OUT(PC_Plus_4_F)
     );
 
     instruction_memory imem (
-        .PC_Out(PC),
+        .PC_Addr(PC_F),
         .Instr(Instr_F)
     );
 
@@ -55,7 +55,7 @@ module program_counter (
 endmodule
 
 module instruction_memory (
-    input wire [31:0] PC_Out,
+    input wire [31:0] PC_Addr,
     output wire [31:0] Instr
     );
 
@@ -65,5 +65,5 @@ module instruction_memory (
         $readmemh("src/program.hex", memory);
     end
 
-    assign Instr = memory[PC_Out[31:2]]; // Use word aligned addressing
+    assign Instr = memory[PC_Addr[31:2]]; // Use word aligned addressing
 endmodule

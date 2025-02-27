@@ -8,9 +8,9 @@
 
 module mux2_1 (
     input wire SEL,
-    input wire [31:0] IN1, IN2,
+    input wire [31:0] A, B,
     output wire [31:0] OUT
     );
 
-    assign OUT = SEL ? IN2 : IN1;
+    assign OUT = SEL ? B : A;
 endmodule

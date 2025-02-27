@@ -47,22 +47,22 @@ module execute (
 
     mux2_1 mux2_1_srca (
         .SEL(ALU_SrcA_Sel_E),
-        .IN1(REG_R_Data1_E), // Replace later with output from forwarding mux
-        .IN2(PC_E),
+        .A(REG_R_Data1_E), // Replace later with output from forwarding mux
+        .B(PC_E),
         .OUT(SrcA)
     );
 
     mux2_1 mux2_1_srcb (
         .SEL(ALU_SrcB_Sel_E),
-        .IN1(REG_R_Data2_E), // Replace later with output from forwarding mux
-        .IN2(Imm_Ext_E),
+        .A(REG_R_Data2_E), // Replace later with output from forwarding mux
+        .B(Imm_Ext_E),
         .OUT(SrcB)
     );
 
     mux2_1 mux2_1_branch (
         .SEL(Branch_Src_Sel_E),
-        .IN1(PC_E), 
-        .IN2(REG_R_Data1_E),
+        .A(PC_E), 
+        .B(REG_R_Data1_E),
         .OUT(Branch_Src)
     );
 

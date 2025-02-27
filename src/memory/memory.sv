@@ -26,7 +26,7 @@ module memory (
     // -----------------------------------------------------------
     
     // Outputs
-    output wire [31:0] MEM_Out_M
+    output wire [31:0] Data_Out_Ext_M
     );
 
     data_memory data_memory (
@@ -35,7 +35,7 @@ module memory (
         .MEM_Control(MEM_Control_M),
         .RW_Addr(ALU_Out_M),
         .W_Data(REG_R_Data2_M),
-        .R_Data(MEM_Out_M)
+        .R_Data(Data_Out_Ext_M)
     );
 
 endmodule
