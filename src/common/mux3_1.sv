@@ -7,8 +7,8 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 module mux3_1 (
-    input wire SEL,
-    input wire [31:0] A, B, C
+    input wire [1:0] SEL,
+    input wire [31:0] A, B, C,
     output wire [31:0] OUT
     );
 

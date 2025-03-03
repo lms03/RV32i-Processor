@@ -4,6 +4,9 @@
 // Description: Holds all Execute stage modules.
 //              ALU: 
 //                  Performs arithmetic and logical operations on two operands.
+//                  Also evaluates branch conditions.
+//              Target Adder:
+//                  Calculates the target address of a branch instruction.
 // Date Modified: February 2025                                                                                                                                                                                                                                                       
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -35,11 +38,11 @@ module execute (
     output wire Branch_Taken_E,
     output wire [31:0] ALU_Out_E,
     output wire [31:0] PC_Target_E,
-    output wire [4:0] SrcB_Reg      // Should be connected to REG_R_Data2_E output
+    output wire [31:0] SrcB_Reg_E     
     );
 
     wire [31:0] SrcA, SrcB;
-    wire [31:0] SrcA_Reg, SrcB_Reg;
+    wire [31:0] SrcA_Reg;
     wire Branch_Out;
     wire [31:0] Branch_Src;
 
@@ -57,7 +60,7 @@ module execute (
         .B(ALU_Out_M),
         .C(Result_W),
         .OUT(SrcA_Reg)
-    )
+    );
 
     mux2_1 mux2_1_srca (
         .SEL(ALU_SrcA_Sel_E),
@@ -71,12 +74,12 @@ module execute (
         .A(REG_R_Data2_E),
         .B(ALU_Out_M),
         .C(Result_W),
-        .OUT(SrcB_Reg) // Is the output of REG_R_Data2 from this stage
-    )
+        .OUT(SrcB_Reg_E) 
+    );
 
     mux2_1 mux2_1_srcb (
         .SEL(ALU_SrcB_Sel_E),
-        .A(SrcB_Reg), 
+        .A(SrcB_Reg_E), 
         .B(Imm_Ext_E),
         .OUT(SrcB)
     );

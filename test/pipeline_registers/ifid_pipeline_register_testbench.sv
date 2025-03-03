@@ -14,9 +14,11 @@ module ifid_pipeline_register_testbench ();
     
     // Input signals
     logic [31:0] Instr_F, PC_F, PC_Plus_4_F;
+    logic Predict_Taken_F;
 
     // Output signals
     logic [31:0] Instr_D, PC_D, PC_Plus_4_D;
+    logic Predict_Taken_D;
 
     ifid_register ifid (
         .CLK(CLK),
@@ -26,25 +28,23 @@ module ifid_pipeline_register_testbench ();
         .Instr_F(Instr_F),
         .PC_F(PC_F),
         .PC_Plus_4_F(PC_Plus_4_F),
+        .Predict_Taken_F(Predict_Taken_F),
         .Instr_D(Instr_D),
         .PC_D(PC_D),
-        .PC_Plus_4_D(PC_Plus_4_D)
+        .PC_Plus_4_D(PC_Plus_4_D),
+        .Predict_Taken_D(Predict_Taken_D)
     );
 
     initial CLK <= 1; // Initialize the clock
     always #(CLOCK_PERIOD / 2) CLK <= ~CLK; // Generate the clock
 
     initial begin
-        // Initialize signals with reset and flush
+        // Reset and initialize signals
         RST <= 1;
+        Flush_D <= 0;
         Stall_En <= 0;
-        Flush_D <= 1;
-        Instr_F <= 32'h0;
-        PC_F <= 32'h0;
-        PC_Plus_4_F <= 32'h0;
         @(posedge CLK);
         RST <= 0;
-        Flush_D <= 0;
 
         // Test reset
         operate(5);
@@ -71,28 +71,29 @@ module ifid_pipeline_register_testbench ();
 
     task operate(int duration); begin
         for (int i = 0; i < duration; i++) begin
-            Instr_F <= $urandom_range(0, 32'hFFFFFFFF);
-            PC_F <= $urandom_range(0, 32'hFFFFFFFF);
-            PC_Plus_4_F <= $urandom_range(0, 32'hFFFFFFFF);
+            Instr_F <= $urandom;
+            PC_F <= $urandom;
+            PC_Plus_4_F <= $urandom;
+            Predict_Taken_F <= $urandom;
             @(posedge CLK);
         end
     end
     endtask
 
-    // Assert register resets to 0 when reset is asserted
-    assertRegisterReset: assert property (@(posedge CLK) (RST == 1 |-> ##1 (Instr_D == 32'h0 && PC_D == 32'h0 && PC_Plus_4_D == 32'h0))) 
-        else $error("Error: Register did not reset correctly, expected all 0 values but got instruction %h, PC %h, PC+4 %h", $sampled(Instr_D), $sampled(PC_D), $sampled(PC_Plus_4_D));
+    // Assert register resets instruction to 0x00000000 to prevent state changes
+    assertRegisterReset: assert property (@(posedge CLK) (RST |-> ##1 (Instr_D == 32'h0000_0000))) 
+        else $error("Error: Register did not reset correctly, expected instruction 0x0000_0000 but got instruction %h", $sampled(Instr_D));
 
     // Assert register keeps the same value when stall is asserted
-    assertRegisterStall: assert property (@(posedge CLK) ((RST == 0 && Stall_En == 1) |-> ##1 (Instr_D == $past(Instr_D) && PC_D == $past(PC_D) && PC_Plus_4_D == $past(PC_Plus_4_D)))) 
-        else $error("Error: Register did not stall correctly, expected instruction %h, PC %h, PC+4 %h but got instruction %h, PC %h, PC+4 %h", $sampled($past(Instr_D)), $sampled($past(PC_D)), $sampled($past(PC_Plus_4_D)), $sampled(Instr_D), $sampled(PC_D), $sampled(PC_Plus_4_D));
+    assertRegisterStall: assert property (@(posedge CLK) ((Stall_En && !Flush_D && !RST) |-> ##1 (Instr_D == $past(Instr_D) && PC_D == $past(PC_D) && PC_Plus_4_D == $past(PC_Plus_4_D) && Predict_Taken_D == $past(Predict_Taken_D)))) 
+        else $error("Error: Register did not stall correctly, expected instruction %h, PC %h, PC+4 %h, Predict %h but got instruction %h, PC %h, PC+4 %h, Predict %h", $sampled($past(Instr_D)), $sampled($past(PC_D)), $sampled($past(PC_Plus_4_D)), $sampled($past(Predict_Taken_D)), $sampled(Instr_D), $sampled(PC_D), $sampled(PC_Plus_4_D), $sampled(Predict_Taken_D));
 
     // Assert register inserts a NOP when flush is asserted
-    assertRegisterFlush: assert property (@(posedge CLK) ((RST == 0 && Stall_En == 0 && Flush_D == 1) |-> ##1 (Instr_D == 32'h0000_0013 && PC_D == 32'h2A2A_2A2A && PC_Plus_4_D == 32'h2A2A_2A2A))) 
-        else $error("Error: Register did not flush correctly, expected instruction 0x00000013, PC 0x2A2A2A2A, PC+4 0x2A2A2A2A but got instruction %h, PC %h, PC+4 %h", $sampled(Instr_D), $sampled(PC_D), $sampled(PC_Plus_4_D));
+    assertRegisterFlush: assert property (@(posedge CLK) ((Flush_D && !RST) |-> ##1 (Instr_D == 32'h0000_0013 && PC_D == 32'h2A2A_2A2A && PC_Plus_4_D == 32'h2A2A_2A2A))) 
+        else $error("Error: Register did not flush correctly, expected instruction 0x0000_0013, PC 0x2A2A_2A2A, PC+4 0x2A2A_2A2A but got instruction %h, PC %h, PC+4 %h", $sampled(Instr_D), $sampled(PC_D), $sampled(PC_Plus_4_D));
 
     // Assert register passes data through when supposed to (control signals low)
-    assertRegisterNormal: assert property (@(posedge CLK) ((RST == 0 && Stall_En == 0 && Flush_D == 0) |-> ##1 (Instr_D == $past(Instr_F) && PC_D == $past(PC_F) && PC_Plus_4_D == $past(PC_Plus_4_F)))) 
-        else $error("Error: Register did not pass data correctly, expected instruction %h, PC %h, PC+4 %h but got instruction %h, PC %h, PC+4 %h", $sampled($past(Instr_F)), $sampled($past(PC_F)), $sampled($past(PC_Plus_4_F)), $sampled(Instr_D), $sampled(PC_D), $sampled(PC_Plus_4_D));
+    assertRegisterNormal: assert property (@(posedge CLK) ((!Stall_En && !Flush_D && !RST) |-> ##1 (Instr_D == $past(Instr_F) && PC_D == $past(PC_F) && PC_Plus_4_D == $past(PC_Plus_4_F) && Predict_Taken_D == $past(Predict_Taken_F)))) 
+        else $error("Error: Register did not pass data correctly, expected instruction %h, PC %h, PC+4 %h Predict %h but got instruction %h, PC %h, PC+4 %h, Predict %h", $sampled($past(Instr_F)), $sampled($past(PC_F)), $sampled($past(PC_Plus_4_F)), $sampled($past(Predict_Taken_F)), $sampled(Instr_D), $sampled(PC_D), $sampled(PC_Plus_4_D), $sampled(Predict_Taken_D));
 
 endmodule

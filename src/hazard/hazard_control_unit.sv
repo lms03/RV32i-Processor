@@ -11,7 +11,7 @@ import definitions::*;
 module hazard_control_unit (
     // Load RAW Hazard 
     input wire [4:0] RS1_D, RS2_D, RD_E,
-    input wire Result_Src_Sel_E, 
+    input wire [1:0] Result_Src_Sel_E, 
 
     // Regular RAW Hazard 
     input wire [4:0] RS1_E, RS2_E,       
@@ -29,20 +29,6 @@ module hazard_control_unit (
     output logic [1:0] FWD_SrcA, FWD_SrcB,
     output logic Stall_En, Flush_D, Flush_E, PC_En
     );
-
-    // Insert a bubble in the case of Load RAW hazard
-    always_comb begin
-        if (RS1_D == RD_E || RS2_D == RD_E && Result_Src_Sel_E == RESULT_MEM) begin
-            PC_En = 1'b0;
-            Flush_E = 1'b1;
-            Stall_En = 1'b1;
-        end
-        else begin
-            PC_En = 1'b1;
-            Flush_E = 1'b0;
-            Stall_En = 1'b0;
-        end
-    end
 
     // Forwarding SrcA for RAW hazards
     always_comb begin
@@ -64,15 +50,24 @@ module hazard_control_unit (
             FWD_SrcB = FWD_NONE;
     end
 
-    // Branch misprediction handling
+    // Branch misprediction and load hazard handling
     always_comb begin
+        // Flush the pipeline of misfetched instructions
         if (Branch_Taken_E != Predict_Taken_E) begin
+            PC_En = 1'b1;
             Flush_E = 1'b1;
             Flush_D = 1'b1;
         end
+        // Insert a bubble in the case of Load RAW hazard
+        else if (RS1_D == RD_E || RS2_D == RD_E && Result_Src_Sel_E == RESULT_MEM) begin
+            PC_En = 1'b0;
+            Flush_E = 1'b1;
+            Stall_En = 1'b1;
+        end
         else begin
+            PC_En = 1'b1;
             Flush_E = 1'b0;
-            Flush_D = 1'b0;
+            Stall_En = 1'b0;
         end
     end
 endmodule

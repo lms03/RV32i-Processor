@@ -30,6 +30,7 @@ module idex_register (
 
     // PC
     input wire [31:0] PC_D, PC_Plus_4_D,
+    input wire Predict_Taken_D,
 
     // -----------------------------------------------------------
     
@@ -49,12 +50,13 @@ module idex_register (
     output logic [31:0] Imm_Ext_E,
 
     // PC
-    output logic [31:0] PC_E, PC_Plus_4_E
+    output logic [31:0] PC_E, PC_Plus_4_E,
+    output logic Predict_Taken_E
     );
 
-    always_ff @ (posedge CLK) begin // Synchronous flush and reset 
-        if (RST) begin // Ensure a safe state
-            REG_W_En_E <= 1'b0; 
+    always_ff @ (posedge CLK) begin // Synchronous flush 
+        if (RST) begin
+            REG_W_En_E <= 1'b0; // Disable state changing signals only
             MEM_W_En_E <= 1'b0;
             Jump_En_E <= 1'b0;
             Branch_En_E <= 1'b0;
@@ -86,6 +88,7 @@ module idex_register (
             Imm_Ext_E <= Imm_Ext_D;
             PC_E <= PC_D; 
             PC_Plus_4_E <= PC_Plus_4_D;
+            Predict_Taken_E <= Predict_Taken_D;
         end
     end
 endmodule

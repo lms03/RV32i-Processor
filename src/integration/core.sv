@@ -14,6 +14,7 @@ module core (
     // Fetch Signals
     wire PC_En;
     wire [31:0] Instr_F, PC_F, PC_Plus_4_F;
+    wire Predict_Taken_F;
 
     // Decode Signals
     wire Flush_D, Stall_En;
@@ -27,6 +28,7 @@ module core (
     wire [4:0] RD_D, RS1_D, RS2_D;
     wire [31:0] REG_R_Data1_D, REG_R_Data2_D;
     wire [31:0] Imm_Ext_D;
+    wire Predict_Taken_D;
 
     // Execute Signals
     wire Flush_E;
@@ -36,12 +38,15 @@ module core (
     wire [3:0] ALU_Control_E;
     wire Branch_Src_Sel_E;
     wire ALU_SrcA_Sel_E, ALU_SrcB_Sel_E;
+    wire [1:0] FWD_SrcA, FWD_SrcB;
     wire [1:0] Result_Src_Sel_E;
     wire [4:0] RD_E, RS1_E, RS2_E;
     wire [31:0] REG_R_Data1_E, REG_R_Data2_E;
+    wire [31:0] SrcB_Reg_E;
     wire [31:0] Imm_Ext_E;
     wire Branch_Taken_E;
     wire [31:0] ALU_Out_E, PC_Target_E;
+    wire Predict_Taken_E;
 
     // Memory Signals
     wire REG_W_En_M, MEM_W_En_M;
@@ -66,10 +71,15 @@ module core (
         .CLK(CLK),
         .RST(RST),
         .PC_En(PC_En),
+        .Predict_Taken_E(Predict_Taken_E),
+        .Branch_Taken_E(Branch_Taken_E),
+        .PC_Plus_4_E(PC_Plus_4_E),
+        .PC_Target_E(PC_Target_E),
         // ------------------------------ 
         .Instr_F(Instr_F),
         .PC_F(PC_F),
-        .PC_Plus_4_F(PC_Plus_4_F)
+        .PC_Plus_4_F(PC_Plus_4_F),
+        .Predict_Taken_F(Predict_Taken_F)
     );
 
     ifid_register ifid_reg (
@@ -80,10 +90,12 @@ module core (
         .Instr_F(Instr_F),
         .PC_F(PC_F),
         .PC_Plus_4_F(PC_Plus_4_F),
+        .Predict_Taken_F(Predict_Taken_F),
         // ------------------------------
         .Instr_D(Instr_D),
         .PC_D(PC_D),
-        .PC_Plus_4_D(PC_Plus_4_D)
+        .PC_Plus_4_D(PC_Plus_4_D),
+        .Predict_Taken_D(Predict_Taken_D)
     );
 
     decode decode (
@@ -133,6 +145,7 @@ module core (
         .Imm_Ext_D(Imm_Ext_D),
         .PC_D(PC_D),
         .PC_Plus_4_D(PC_Plus_4_D),
+        .Predict_Taken_D(Predict_Taken_D),
         // ------------------------------
         .REG_W_En_E(REG_W_En_E),
         .MEM_W_En_E(MEM_W_En_E),
@@ -151,7 +164,8 @@ module core (
         .REG_R_Data2_E(REG_R_Data2_E),
         .Imm_Ext_E(Imm_Ext_E),
         .PC_E(PC_E),
-        .PC_Plus_4_E(PC_Plus_4_E)
+        .PC_Plus_4_E(PC_Plus_4_E),
+        .Predict_Taken_E(Predict_Taken_E)
     );
 
     execute execute (
@@ -161,14 +175,19 @@ module core (
         .Branch_Src_Sel_E(Branch_Src_Sel_E),
         .ALU_SrcA_Sel_E(ALU_SrcA_Sel_E),
         .ALU_SrcB_Sel_E(ALU_SrcB_Sel_E),
+        .FWD_SrcA(FWD_SrcA),
+        .FWD_SrcB(FWD_SrcB),
         .REG_R_Data1_E(REG_R_Data1_E),
         .REG_R_Data2_E(REG_R_Data2_E),
+        .ALU_Out_M(ALU_Out_M),
+        .Result_W(REG_W_Data_W),
         .Imm_Ext_E(Imm_Ext_E),
         .PC_E(PC_E),
         // ------------------------------
         .Branch_Taken_E(Branch_Taken_E),
         .ALU_Out_E(ALU_Out_E),
-        .PC_Target_E(PC_Target_E)
+        .PC_Target_E(PC_Target_E),
+        .SrcB_Reg_E(SrcB_Reg_E)
     );
 
     exmem_register exmem_reg (
