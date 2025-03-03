@@ -41,6 +41,25 @@ parameter SRCA_PC = 1'b1;
 parameter SRCB_REG = 1'b0;
 parameter SRCB_IMM = 1'b1;
 
+// FWD_SrcA/B parameters
+parameter FWD_NONE = 2'b00; 
+parameter FWD_MEM = 2'b01;  // Result from ALU in Memory stage
+parameter FWD_WB = 2'b10;   // Final result from Writeback stage
+
+// Branch_Taken parameters
+parameter BRANCH_NOT_TAKEN = 1'b0;
+parameter BRANCH_TAKEN = 1'b1;
+
+// Predict_Taken parameters
+parameter PREDICT_NOT_TAKEN = 1'b0;
+parameter PREDICT_TAKEN = 1'b1;
+
+// Branch_State parameters
+parameter STRONGLY_UNTAKEN = 2'b00;
+parameter WEAKLY_UNTAKEN = 2'b01;
+parameter WEAKLY_TAKEN = 2'b10;
+parameter STRONGLY_TAKEN = 2'b11;
+
 // ALU Control Signals
 parameter ALU_ADD = 4'b0000; // Add SrcA and SrcB - ADD(I), L(B/H/W), S(B/H/W), AUIPC
 parameter ALU_SUB = 4'b0001; // Subtract SrcA and SrcB - SUB 

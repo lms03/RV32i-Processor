@@ -7,9 +7,12 @@
 //                  Uses synchronous reset.        
 //              Instruction Memory:
 //                  Holds the program for the processor to execute 
-//                  and outputs the instruction pointed to by the PC.  
+//                  and outputs the instruction pointed to by the PC.
+//              Branch Predictor:
+//                  Implements a 2-bit saturating counter to predict
+//                  whether a branch will be taken or not.
 // Author: Luke Shepherd                                                     
-// Date Modified: February 2025                                                                                                                                                                                                                                                       
+// Date Modified: March 2025                                                                                                                                                                                                                                                       
 //////////////////////////////////////////////////////////////////////////////////
 
 import definitions::*;
@@ -66,4 +69,41 @@ module instruction_memory (
     end
 
     assign Instr = memory[PC_Addr[31:2]]; // Use word aligned addressing
+endmodule
+
+module branch_predictor (
+    input wire Branch_Taken, Predict_Taken,
+    output logic Predict_Out
+    );
+    
+    logic [1:0] state;
+
+    always_comb begin
+        case (state)
+            STRONGLY_UNTAKEN: 
+                if (Predict_Taken == Branch_Taken) // If prediction correct
+                    state = WEAKLY_UNTAKEN;
+                else
+                    state = STRONGLY_UNTAKEN;
+            WEAKLY_UNTAKEN: // These two cases could use +- but this is more readable
+                if (Predict_Taken == Branch_Taken) 
+                    state = WEAKLY_TAKEN;
+                else
+                    state = STRONGLY_UNTAKEN;
+            WEAKLY_TAKEN:
+                if (Predict_Taken == Branch_Taken)
+                    state = STRONGLY_TAKEN;
+                else
+                    state = WEAKLY_UNTAKEN;
+            STRONGLY_TAKEN:
+                if (Predict_Taken == Branch_Taken)
+                    state = STRONGLY_TAKEN;
+                else
+                    state = WEAKLY_TAKEN;
+            default:
+                state = WEAKLY_TAKEN;   // Initialize/default to weakly taken
+        endcase
+    end
+
+    assign Predict_Out = (state == STRONGLY_TAKEN) ? 1 : (state == WEAKLY_TAKEN) ? 1 : 0;
 endmodule

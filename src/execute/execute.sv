@@ -25,15 +25,21 @@ module execute (
     // PC
     input wire [31:0] PC_E,
 
+    // Forwarding
+    input wire [1:0] FWD_SrcA, FWD_SrcB,
+    input wire [31:0] ALU_Out_M, Result_W,
+
     // -----------------------------------------------------------
     
     // Outputs
     output wire Branch_Taken_E,
     output wire [31:0] ALU_Out_E,
-    output wire [31:0] PC_Target_E
+    output wire [31:0] PC_Target_E,
+    output wire [4:0] SrcB_Reg      // Should be connected to REG_R_Data2_E output
     );
 
     wire [31:0] SrcA, SrcB;
+    wire [31:0] SrcA_Reg, SrcB_Reg;
     wire Branch_Out;
     wire [31:0] Branch_Src;
 
@@ -45,16 +51,32 @@ module execute (
         .Branch_Condition(Branch_Out)
     );
 
+    mux3_1 mux3_1_fwda (
+        .SEL(FWD_SrcA),
+        .A(REG_R_Data1_E),
+        .B(ALU_Out_M),
+        .C(Result_W),
+        .OUT(SrcA_Reg)
+    )
+
     mux2_1 mux2_1_srca (
         .SEL(ALU_SrcA_Sel_E),
-        .A(REG_R_Data1_E), // Replace later with output from forwarding mux
+        .A(SrcA_Reg), 
         .B(PC_E),
         .OUT(SrcA)
     );
 
+    mux3_1 mux3_1_fwdb (
+        .SEL(FWD_SrcB),
+        .A(REG_R_Data2_E),
+        .B(ALU_Out_M),
+        .C(Result_W),
+        .OUT(SrcB_Reg) // Is the output of REG_R_Data2 from this stage
+    )
+
     mux2_1 mux2_1_srcb (
         .SEL(ALU_SrcB_Sel_E),
-        .A(REG_R_Data2_E), // Replace later with output from forwarding mux
+        .A(SrcB_Reg), 
         .B(Imm_Ext_E),
         .OUT(SrcB)
     );

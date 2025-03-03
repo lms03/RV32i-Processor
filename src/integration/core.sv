@@ -62,10 +62,6 @@ module core (
     wire [4:0] REG_W_Addr_W;
     wire [31:0] REG_W_Data_W;
 
-    assign PC_En = 1'b1; // Always enabled (TEMPORARY, CHANGE LATER)
-    assign Flush_D = 1'b0; // Never flush (TEMPORARY, CHANGE LATER)
-    assign Stall_En = 1'b0; // Never stall (TEMPORARY, CHANGE LATER)
-
     fetch fetch (
         .CLK(CLK),
         .RST(RST),
@@ -232,5 +228,27 @@ module core (
         .PC_Plus_4_W(PC_Plus_4_W),
         // ------------------------------
         .Result_W(REG_W_Data_W)
+    );
+
+    hazard_control_unit hazard_control_unit (
+        .RS1_D(RS1_D),
+        .RS2_D(RS2_D),
+        .RD_E(RD_E),
+        .Result_Src_Sel_E(Result_Src_Sel_E),
+        .RS1_E(RS1_E),
+        .RS2_E(RS2_E),
+        .RD_M(RD_M),
+        .REG_W_En_M(REG_W_En_M),
+        .RD_W(REG_W_Addr_W),
+        .REG_W_En_W(REG_W_En_W),
+        .Branch_Taken_E(Branch_Taken_E),
+        .Predict_Taken_E(Predict_Taken_E),
+        // ------------------------------
+        .FWD_SrcA(FWD_SrcA),
+        .FWD_SrcB(FWD_SrcB),
+        .Stall_En(Stall_En),
+        .Flush_D(Flush_D),
+        .Flush_E(Flush_E),
+        .PC_En(PC_En)
     );
 endmodule
