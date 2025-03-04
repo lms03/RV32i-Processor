@@ -82,8 +82,8 @@ module fetch (
     // If we predict a branch taken we use the predicted PC from the BTB
     mux2_1 mux2_1_pc_predict (
         .SEL(Predict_Taken_F),
-        .A(PC_Prediction),
-        .B(PC_Plus_4_F),
+        .A(PC_Plus_4_F),
+        .B(PC_Prediction),
         .OUT(PC_Predict)
     );
 
@@ -121,7 +121,7 @@ module instruction_memory (
         $readmemh("src/program.hex", memory);
     end
 
-    assign Instr = memory[PC_Addr[31:2]]; // Use word aligned addressing
+    assign Instr = memory[PC_Addr[9:2]]; // Use word aligned addressing
 endmodule
 
 module branch_predictor (

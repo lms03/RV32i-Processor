@@ -3,8 +3,8 @@
 
 00100093 // 00 - ADDI x1, x0, 1
 00200113 // 04 - ADDI x2, x0, 2
-00000013 // 08 - NOP Bubble dependency
-00000013 // 0C - NOP Bubble dependency
+//00000013 // 08 - NOP Bubble dependency, commented to test forwarding
+//00000013 // 0C - NOP Bubble dependency
 002081B3 // 10 - ADD x3, x1, x2
 00000013 // 14 - NOP
 00000013 // 18 - NOP

@@ -57,15 +57,18 @@ module hazard_control_unit (
             PC_En = 1'b1;
             Flush_E = 1'b1;
             Flush_D = 1'b1;
+            Stall_En = 1'b0;
         end
         // Insert a bubble in the case of Load RAW hazard
-        else if (RS1_D == RD_E || RS2_D == RD_E && Result_Src_Sel_E == RESULT_MEM) begin
+        else if ((RS1_D == RD_E || RS2_D == RD_E) && Result_Src_Sel_E == RESULT_MEM) begin
             PC_En = 1'b0;
+            Flush_D = 1'b0; // Don't flush just stall the decode stage
             Flush_E = 1'b1;
             Stall_En = 1'b1;
         end
         else begin
             PC_En = 1'b1;
+            Flush_D = 1'b0;
             Flush_E = 1'b0;
             Stall_En = 1'b0;
         end
