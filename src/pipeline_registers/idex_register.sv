@@ -60,6 +60,7 @@ module idex_register (
             MEM_W_En_E <= 1'b0;
             Jump_En_E <= 1'b0;
             Branch_En_E <= 1'b0;
+            Predict_Taken_E <= 1'b0; // Prevent headaches from uninitialized values used in fetch
         end
         else if (Flush_E) begin // Insert NOP (ADDI x0, x0, 0) and set PC for clarity
             REG_W_En_E <= 1'b0; // Disable state changing signals

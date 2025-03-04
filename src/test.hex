@@ -1,0 +1,144 @@
+55500093 //00
+FFE00113 //04
+1E008A63 //08 BEQ not taken correctly
+00101463 //0C BNE taken correctly (mispredicted but corrected)
+1E000663 //10 ---flushed---
+1E109463 //14 okay_1 BNE not taken 
+00108463 //18 BEQ taken correctly (mispredicted but corrected)
+1E000063 //1C ---flushed---
+1C00CE63 //20 okay_2 BLT not taken correctly
+0000D463 //24 BGE taken correctly (mispredicted but corrected)
+1C000A63 //28 ---flushed---
+1C105863 //2C okay_3 BGE not taken correctly
+00104463 //30 BLT taken correctly (mispredicted but corrected)
+1C000463 //34 ---flushed---
+1C20C263 //38 okay_4 BLT not taken correctly
+00114463 //3C BLT taken correctly (mispredicted but corrected)
+1A000E63 //40 ---flushed---
+1A115C63 //44 okay_5 BGE not taken correctly
+0020D463 //48 BGE taken correctly (mispredicted but corrected)
+1A000863 //4C ---flushed---
+1A214663 //50 okay_6 BLT not taken correctly
+00215463 //54 BGE taken correctly (mispredicted but corrected)
+1A000263 //58 ---flushed---
+1A116063 //5C okay_7 BLTU not taken correctly
+0020E463 //60 BLTU taken correctly (mispredicted but corrected)
+18000C63 //64 ---flushed---
+1820FA63 //68 okay_8 BGEU not taken correctly
+00117463 //6C BGEU taken correctly (mispredicted but corrected)
+18000663 //70 ---flushed---
+1810E463 //74 okay_9 BLTU not taken correctly
+0010F463 //78 BLTU taken correctly (mispredicted but corrected)
+18000063 //7C ---flushed---
+014000EF //80 okay_10 JAL -> 94 taken correctly (mispredicted but corrected)
+01C0006F //84 ---flushed--- | J ->  a0 (over) taken correctly (mispredicted but corrected)
+00000013 //88 ---flushed--- | NOP correct
+00028067 //8C JALR -> 98 (return1) taken correctly (mispredicted but corrected)
+16000663 //90
+FF5FF2EF //94 JAL -> 88 taken correctly (mispredicted but corrected) | Predicted correctly 2nd time
+00008067 //98 ---flushed--- | ret (return2 JALR -> x1) taken correctly (mispredicted but corrected)
+16000063 //9C ---flushed---
+FF5FF0EF //a0 over JAL -> 94 taken correctly (mispredicted but corrected)
+00100093 //Keep investigating
+001080B3
+00200193
+14309863
+002181B3
+14301463
+402001B3
+14119063
+00218193
+00109093
+12119A63
+00300213
+004191B3
+01C08093
+12119263
+0201A213
+10404E63
+0211A213
+10020A63
+0011A233
+10021663
+0030A233
+10021263
+0020A233
+0E021E63
+00112233
+0E020A63
+00113233
+0E021663
+FFF00093
+0020B233
+0E021063
+00113233
+0C020C63
+0020C233
+FFF20293
+0C029663
+00000317
+0B030313
+01000393
+00034403
+00030403
+00130313
+FFF38393
+FE7048E3
+00000317
+09030313
+00800393
+00035403
+00031403
+00230313
+FFF38393
+FE7048E3
+00000317
+07030313
+00400393
+00036403
+00032403
+00430313
+FFF38393
+FE7048E3
+332213B7
+10038393
+FF032403
+06741063
+00000317
+05030313
+12345437
+67840413
+00832023
+00230383
+01045493
+0FF4F493
+02939E63
+00938263
+00100073
+FFDFF06F
+00430313
+00430313
+FFF38393
+FFF38393
+33221100
+77665544
+BBAA9988
+FFEEDDCC
+00000000
+00000063
+0000006F
+0000006F
+FFE00113
+0020A1B3
+001121B3
+0020B1B3
+001131B3
+00002203
+00001203
+00201203
+00000203
+00100203
+00200203
+00300203
+002000A3
+00000000

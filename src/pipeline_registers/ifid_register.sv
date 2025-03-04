@@ -18,6 +18,7 @@ module ifid_register (
     always_ff @ (posedge CLK) begin // Synchronous flush
         if (RST) begin
             Instr_D <= 32'h0000_0000; // Just ensure instruction is invalid to prevent state changes
+            Predict_Taken_D <= 1'b0; // Prevent uninitialized values being used in fetch
         end
         else if (Flush_D) begin // Insert NOP (ADDI x0, x0, 0)
             Instr_D <= 32'h0000_0013;

@@ -207,7 +207,20 @@ module hazard_control_unit_testbench;
         check_signals(FWD_NONE, FWD_NONE, 0, 1, 1, 1); // Should flush both stages
         
         // Test load RAW hazard (Insert bubble Stall+Flush)
-        
+        RS1_D <= 5'b00011;  // x3
+        RS2_D <= 5'b00001;  // x1
+        RD_E <= 5'b00001;   // x1, clashes with rs2_D
+        Result_Src_Sel_E <= RESULT_MEM; // Load
+        RS1_E <= 5'b00000;  // N/A
+        RS2_E <= 5'b00000;  // N/A
+        RD_M <= 5'b11111;   // N/A
+        RD_W <= 5'b11111;   // N/A
+        REG_W_En_M <= 1'b0; // N/A 
+        REG_W_En_W <= 1'b0; // N/A
+        Branch_Taken_E <= 1'b0; // Ensure no branch misprediction
+        Predict_Taken_E <= 1'b0;
+        @(posedge CLK);
+        check_signals(FWD_NONE, FWD_NONE, 1, 0, 1, 0); // Should flush idex and stall ifid to insert a bubble
         $stop; 
     end
 

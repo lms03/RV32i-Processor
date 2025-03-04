@@ -23,16 +23,17 @@ import definitions::*;
 module fetch (
     input wire CLK, RST, PC_En,
     input wire Predict_Taken_E, Branch_Taken_E,
-    input wire [31:0] PC_Target_E, PC_Plus_4_E,
+    input wire [31:0] PC_Target_E, PC_Plus_4_E, PC_E,
     output wire [31:0] Instr_F, PC_F, PC_Plus_4_F,
     output wire Predict_Taken_F
     );
 
     wire [31:0] PC_In, PC_Next, PC_Predict, PC_Prediction;
-    wire Predict_Out, PC_Overwrite_Sel, Valid;
+    wire Predict_Out, PC_Overwrite_Sel, PC_Sel, Valid;
 
+    assign PC_Sel = !Predict_Taken_E && Branch_Taken_E; // If we didn't predict and we should have taken we need to overwrite
     assign Predict_Taken_F = Predict_Out && Valid; // Only predict if we have a corresponding branch target prediction
-    assign PC_Overwrite_Sel = Predict_Taken_F && !Branch_Taken_E; // Overwrite if we predicted it to be taken but it shouldn't have been
+    assign PC_Overwrite_Sel = Predict_Taken_E && !Branch_Taken_E; // Overwrite if we predicted it to be taken but it shouldn't have been
 
     program_counter pc (
         .CLK(CLK),
@@ -65,7 +66,8 @@ module fetch (
         .CLK(CLK),
         .RST(RST),
         .PC_Target(PC_Target_E),
-        .PC(PC_F),
+        .PC_F(PC_F),
+        .PC_E(PC_E),
         .Branch_Taken(Branch_Taken_E),
         .Valid(Valid),
         .PC_Prediction(PC_Prediction)
@@ -89,7 +91,7 @@ module fetch (
 
     // If a branch evaluated to taken later we use the calculated target PC otherwise the outcome from the previous MUX
     mux2_1 mux2_1_pc_branch (
-        .SEL(Branch_Taken_E),
+        .SEL(PC_Sel),
         .A(PC_Predict),
         .B(PC_Target_E),
         .OUT(PC_Next)
@@ -118,7 +120,7 @@ module instruction_memory (
     logic [31:0] memory [0:255];
 
     initial begin
-        $readmemh("src/program.hex", memory);
+        $readmemh("src/test.hex", memory);
     end
 
     assign Instr = memory[PC_Addr[9:2]]; // Use word aligned addressing
@@ -170,7 +172,7 @@ endmodule
 
 module branch_target_buffer (
     input wire CLK, RST,
-    input wire [31:0] PC_Target, PC,
+    input wire [31:0] PC_Target, PC_E, PC_F,
     input wire Branch_Taken,
     output logic Valid,
     output logic [31:0] PC_Prediction
@@ -191,15 +193,21 @@ module branch_target_buffer (
         end
         else
         if (Branch_Taken) begin           // Only store taken branches
-            target[PC[4:0]] <= PC_Target; // Index with the lower bits of PC
-            pc[PC[4:0]] <= PC;
-            valid[PC[4:0]] <= 1;
+            target[PC_E[4:0]] <= PC_Target; // Index with the lower bits of PC
+            pc[PC_E[4:0]] <= PC_E;          // Store depends on PC of execute stage
+            valid[PC_E[4:0]] <= 1;
         end
     end
 
     // Asynchronous read
     always_comb begin
-        Valid = valid[PC[4:0]];
-        PC_Prediction = target[PC[4:0]];
+        if(PC_F == pc[PC_F[4:0]]) begin // Check if present in BTB
+            Valid = valid[PC_F[4:0]];  // Output depends on PC of fetch stage
+            PC_Prediction = target[PC_F[4:0]];
+        end
+        else begin
+            Valid = 1'b0; // If not present in BTB
+            PC_Prediction = 32'b0;
+        end
     end
 endmodule

@@ -75,6 +75,7 @@ module core (
         .Branch_Taken_E(Branch_Taken_E),
         .PC_Plus_4_E(PC_Plus_4_E),
         .PC_Target_E(PC_Target_E),
+        .PC_E(PC_E),
         // ------------------------------ 
         .Instr_F(Instr_F),
         .PC_F(PC_F),
