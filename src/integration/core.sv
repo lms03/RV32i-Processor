@@ -77,7 +77,6 @@ module core (
         .PC_Target_E(PC_Target_E),
         .PC_E(PC_E),
         // ------------------------------ 
-        .Instr_F(Instr_F),
         .PC_F(PC_F),
         .PC_Plus_4_F(PC_Plus_4_F),
         .Predict_Taken_F(Predict_Taken_F)
@@ -88,12 +87,10 @@ module core (
         .RST(RST),
         .Flush_D(Flush_D), 
         .Stall_En(Stall_En), 
-        .Instr_F(Instr_F),
         .PC_F(PC_F),
         .PC_Plus_4_F(PC_Plus_4_F),
         .Predict_Taken_F(Predict_Taken_F),
         // ------------------------------
-        .Instr_D(Instr_D),
         .PC_D(PC_D),
         .PC_Plus_4_D(PC_Plus_4_D),
         .Predict_Taken_D(Predict_Taken_D)
@@ -219,8 +216,12 @@ module core (
         .MEM_Control_M(MEM_Control_M),
         .REG_R_Data2_M(REG_R_Data2_M),
         .ALU_Out_M(ALU_Out_M),
+        .PC_F(PC_F), // PC address to fetch instructions
+        .Flush_D(Flush_D), // Hazard control
+        .Stall_En(Stall_En),
         // ------------------------------
         .Data_Out_Ext_M(Data_Out_Ext_M)
+        .Instr_D(Instr_D), // Output instruction read straight into decode stage
     );
 
     memwb_register memwb_reg (

@@ -9,7 +9,7 @@
 
 module ifid_register (
     input wire CLK, RST, Flush_D, Stall_En,
-    input wire [31:0] Instr_F, PC_F, PC_Plus_4_F,
+    input wire PC_F, PC_Plus_4_F,
     input wire Predict_Taken_F,
     output logic [31:0] Instr_D, PC_D, PC_Plus_4_D,
     output logic Predict_Taken_D
@@ -17,16 +17,13 @@ module ifid_register (
 
     always_ff @ (posedge CLK) begin // Synchronous flush
         if (RST) begin
-            Instr_D <= 32'h0000_0000; // Just ensure instruction is invalid to prevent state changes
             Predict_Taken_D <= 1'b0; // Prevent uninitialized values being used in fetch
         end
-        else if (Flush_D) begin // Insert NOP (ADDI x0, x0, 0)
-            Instr_D <= 32'h0000_0013;
+        else if (Flush_D) begin 
             PC_D <= 32'h2A2A_2A2A; // Debug pattern for clarity
             PC_Plus_4_D <= 32'h2A2A_2A2A;
         end
         else if (!Stall_En) begin
-            Instr_D <= Instr_F;
             PC_D <= PC_F;
             PC_Plus_4_D <= PC_Plus_4_F;
             Predict_Taken_D <= Predict_Taken_F;

@@ -1,90 +1,90 @@
-55500093 //00
-FFE00113 //04
-1E008A63 //08 BEQ not taken correctly
-00101463 //0C BNE taken correctly (mispredicted but corrected)
-1E000663 //10 ---flushed---
-1E109463 //14 okay_1 BNE not taken 
-00108463 //18 BEQ taken correctly (mispredicted but corrected)
-1E000063 //1C ---flushed---
-1C00CE63 //20 okay_2 BLT not taken correctly
-0000D463 //24 BGE taken correctly (mispredicted but corrected)
-1C000A63 //28 ---flushed---
-1C105863 //2C okay_3 BGE not taken correctly
-00104463 //30 BLT taken correctly (mispredicted but corrected)
-1C000463 //34 ---flushed---
-1C20C263 //38 okay_4 BLT not taken correctly
-00114463 //3C BLT taken correctly (mispredicted but corrected)
-1A000E63 //40 ---flushed---
-1A115C63 //44 okay_5 BGE not taken correctly
-0020D463 //48 BGE taken correctly (mispredicted but corrected)
-1A000863 //4C ---flushed---
-1A214663 //50 okay_6 BLT not taken correctly
-00215463 //54 BGE taken correctly (mispredicted but corrected)
-1A000263 //58 ---flushed---
-1A116063 //5C okay_7 BLTU not taken correctly
-0020E463 //60 BLTU taken correctly (mispredicted but corrected)
-18000C63 //64 ---flushed---
-1820FA63 //68 okay_8 BGEU not taken correctly
-00117463 //6C BGEU taken correctly (mispredicted but corrected)
-18000663 //70 ---flushed---
-1810E463 //74 okay_9 BLTU not taken correctly
-0010F463 //78 BLTU taken correctly (mispredicted but corrected)
-18000063 //7C ---flushed---
-014000EF //80 okay_10 JAL -> 94 taken correctly (mispredicted but corrected)
-01C0006F //84 ---flushed--- | J ->  a0 (over) taken correctly (mispredicted but corrected)
-00000013 //88 ---flushed--- | NOP correct
-00028067 //8C JALR -> 98 (return1) taken correctly (mispredicted but corrected)
-16000663 //90
-FF5FF2EF //94 JAL -> 88 taken correctly (mispredicted but corrected) | Predicted correctly 2nd time
-00008067 //98 ---flushed--- | ret (return2 JALR -> x1) taken correctly (mispredicted but corrected)
-16000063 //9C ---flushed---
-FF5FF0EF //a0 over JAL -> 94 taken correctly (mispredicted but corrected)
-00100093 //Keep investigating
-001080B3
-00200193
-14309863
-002181B3
-14301463
-402001B3
-14119063
-00218193
-00109093
-12119A63
-00300213
-004191B3
-01C08093
-12119263
-0201A213
-10404E63
-0211A213
-10020A63
-0011A233
-10021663
-0030A233
-10021263
-0020A233
-0E021E63
-00112233
-0E020A63
-00113233
-0E021663
-FFF00093
-0020B233
-0E021063
-00113233
-0C020C63
-0020C233
-FFF20293
-0C029663
-00000317
-0B030313
-01000393
-00034403
-00030403
-00130313
-FFF38393
-FE7048E3
-00000317
+55500093 //000
+FFE00113 //004
+1E008A63 //008 BEQ not taken correctly
+00101463 //00C BNE taken correctly (mispredicted but corrected)
+1E000663 //010 ---flushed---
+1E109463 //014 "okay_1" BNE not taken 
+00108463 //018 BEQ taken correctly (mispredicted but corrected)
+1E000063 //01C ---flushed---
+1C00CE63 //020 "okay_2" BLT not taken correctly
+0000D463 //024 BGE taken correctly (mispredicted but corrected)
+1C000A63 //028 ---flushed---
+1C105863 //02C "okay_3" BGE not taken correctly
+00104463 //030 BLT taken correctly (mispredicted but corrected)
+1C000463 //034 ---flushed---
+1C20C263 //038 "okay_4" BLT not taken correctly
+00114463 //03C BLT taken correctly (mispredicted but corrected)
+1A000E63 //040 ---flushed---
+1A115C63 //044 "okay_5" BGE not taken correctly
+0020D463 //048 BGE taken correctly (mispredicted but corrected)
+1A000863 //04C ---flushed---
+1A214663 //050 "okay_6" BLT not taken correctly
+00215463 //054 BGE taken correctly (mispredicted but corrected)
+1A000263 //058 ---flushed---
+1A116063 //05C "okay_7" BLTU not taken correctly
+0020E463 //060 BLTU taken correctly (mispredicted but corrected)
+18000C63 //064 ---flushed---
+1820FA63 //068 "okay_8" BGEU not taken correctly
+00117463 //06C BGEU taken correctly (mispredicted but corrected)
+18000663 //070 ---flushed---
+1810E463 //074 "okay_9" BLTU not taken correctly
+0010F463 //078 BLTU taken correctly (mispredicted but corrected)
+18000063 //07C ---flushed---
+014000EF //080 "okay_10" JAL -> 94 taken correctly (mispredicted but corrected)
+01C0006F //084 ---flushed--- | J ->  a0 (over) taken correctly (mispredicted but corrected)
+00000013 //088 ---flushed--- | NOP correct
+00028067 //08C JALR -> 98 (return1) taken correctly (mispredicted but corrected)
+16000663 //090
+FF5FF2EF //094 JAL -> 88 taken correctly (mispredicted but corrected) | Predicted correctly 2nd time
+00008067 //098 ---flushed--- | ret (return2 JALR -> x1) taken correctly (mispredicted but corrected)
+16000063 //09C ---flushed---
+FF5FF0EF //0A0 "over" JAL -> 94 taken correctly (mispredicted but corrected)
+00100093 //0A4 x1 -> 1 correct
+001080B3 //0A8 x1 -> 2 correct
+00200193 //0AC x3 -> 2 correct
+14309863 //0B0 BNE ignored correctly 
+002181B3 //0B4 x3 -> 0 correct
+14301463 //0B8 BNE ignored correctly
+402001B3 //0BC x3 -> 2 correct
+14119063 //0C0 BNE ignored correct
+00218193 //0C4 x3 -> 4 correct
+00109093 //0C8 x1 -> 4 correct
+12119A63 //0CC BNE ignored correct
+00300213 //0D0 x4 -> 3 correct
+004191B3 //0D4 x3 -> 32 correct
+01C08093 //0D8 x1 -> 32 correct
+12119263 //0DC BNE ignored correct
+0201A213 //0E0 x4 -> false (0) correct
+10404E63 //0E4 BGTZ ignored correct
+0211A213 //0E8 x4 -> true (1) correct
+10020A63 //0EC BEQZ ignored correct
+0011A233 //0F0 x4 -> false (0) correct
+10021663 //0F4 BNEZ ignored correct
+0030A233 //0F8 x4 -> false (0) correct
+10021263 //0FC BNEZ ignored correct
+0020A233 //100 x4 -> false (0) correct
+0E021E63 //104 BNEZ ignored correct
+00112233 //108 x4 -> true (1) correct
+0E020A63 //10C BEQZ ignored correct
+00113233 //110 x4 -> false (0) correct
+0E021663 //114 BNEZ ignored correct
+FFF00093 //118 x1 -> -1 correct
+0020B233 //11C x4 -> false (0) correct
+0E021063 //120 BNEZ ignored correct
+00113233 //124 x4 -> true (1) correct
+0C020C63 //128 BEQZ ignored correct
+0020C233 //12C x4 -> 1 correct
+FFF20293 //130 x5 -> 0 correct
+0C029663 //134 BNEZ ignored correct
+00000317 //138 x6 -> addr of string_1 (138 PC + 176) 
+0B030313 //13C x6 -> +176
+01000393 //140 x7 -> 16 correct
+00034403 //144 x8 -> 0000_0000, 0000_0011, -> 0000_0088 -> 0000_00FF Breaks at this point because imem/dmem are seperate -> remove imem and replace dmem with a true dual port template for whole ram, load with readmemh into array and load from that array into the memory.
+00030403 //148 x8 -> 0000_0000, 0000_0011, -> FFFF_FF88 -> FFFF_FFFF ??
+00130313 //14C x6 -> +1
+FFF38393 //150 x7 -> 15 -> 0
+FE7048E3 //154
+00000317 //158
 09030313
 00800393
 00035403

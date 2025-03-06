@@ -24,7 +24,7 @@ module fetch (
     input wire CLK, RST, PC_En,
     input wire Predict_Taken_E, Branch_Taken_E,
     input wire [31:0] PC_Target_E, PC_Plus_4_E, PC_E,
-    output wire [31:0] Instr_F, PC_F, PC_Plus_4_F,
+    output wire [31:0] PC_F, PC_Plus_4_F, // Instr_F goes directly to decode since it is read into a register.
     output wire Predict_Taken_F
     );
 
@@ -47,11 +47,6 @@ module fetch (
         .A(PC_F),
         .B(32'h4),
         .OUT(PC_Plus_4_F)
-    );
-
-    instruction_memory imem (
-        .PC_Addr(PC_F),
-        .Instr(Instr_F)
     );
 
     branch_predictor bp (
@@ -108,22 +103,8 @@ module program_counter (
         if (RST)
             PC_Out <= 32'b0;
         else if (PC_En)             
-            PC_Out <= PC_In;        
+            PC_Out <= {PC_In[31:2], 2'b0}; // Force word alignment
     end
-endmodule
-
-module instruction_memory (
-    input wire [31:0] PC_Addr,
-    output wire [31:0] Instr
-    );
-
-    logic [31:0] memory [0:255];
-
-    initial begin
-        $readmemh("src/test.hex", memory);
-    end
-
-    assign Instr = memory[PC_Addr[9:2]]; // Use word aligned addressing
 endmodule
 
 module branch_predictor (
