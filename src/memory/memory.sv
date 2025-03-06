@@ -2,7 +2,7 @@
 // Third Year Project: RISC-V RV32i Pipelined Processor
 // File: Memory                                                   
 // Description: Holds all Memory stage modules.
-//              Data Memory:
+//              Unified Memory:
 //                  Acts as a wrapper to the below module in order to have a simple external interface.
 //              bytewrite_tdp_ram_rf: 
 //                  A true-dual-port BRAM template from AMD to represent the memory for the processor, 
@@ -41,7 +41,7 @@ module memory (
     output logic [31:0] Instr_D
     );
 
-    data_memory data_memory (
+    unified_memory unified_memory (
         .CLK(CLK),
         .RST(RST),
         .MEM_W_En(MEM_W_En_M),
@@ -50,13 +50,13 @@ module memory (
         .PC_Addr(PC_F),
         .W_Data(REG_R_Data2_M),
         .Instr(Instr_D),
-        .R_Data(Data_Out_Ext_M)
+        .R_Data(Data_Out_Ext_M),
         .Flush_D(Flush_D),
         .Stall_En(Stall_En)
     );
 endmodule
 
-module data_memory (
+module unified_memory (
     input wire CLK, RST, Flush_D, Stall_En, MEM_W_En,
     input wire [2:0] MEM_Control,
     input wire [31:0] RW_Addr, W_Data,
@@ -67,7 +67,9 @@ module data_memory (
 
     wire MEM_W_En0, MEM_W_En1, MEM_W_En2, MEM_W_En3;   // Write enables for each memory
     wire [3:0] W_En;                               // Combined write enables to pass to memory module
-
+    wire [31:0] Data_Out;
+    wire [31:0] Instr_Out;
+    
     assign MEM_W_En0 = MEM_W_En && ((MEM_Control == MEM_BYTE && RW_Addr[1:0] == 2'b00) || 
                                     (MEM_Control == MEM_HALFWORD && RW_Addr[1] == 1'b0) || 
                                     (MEM_Control == MEM_WORD));
@@ -85,47 +87,56 @@ module data_memory (
 
     bytewrite_tdp_ram_rf memory (
         .clkA(CLK),                     // Use the same clock for both ports but keep the template untouched.
-        .enaA(1),                       // Always enabled since the design has no mechanism for seperate port enables
+        .enaA(1'b1),                       // Always enabled since the design has no mechanism for seperate port enables
         .weA(W_En),
-        .addrA(RW_Addr),
+        .addrA(RW_Addr[9:0]),
         .dinA(W_Data),
-        .doutA(R_Data),                 // Data operation output
+        .doutA(Data_Out),                 // Data operation output
 
         .clkB(CLK),
-        .enaB(1),
+        .enaB(1'b1),
         .weB(4'b0000),                  // Don't write with this port since only dual read is needed, theres probably a better way to do it.
-        .addrB({PC_Addr[31:2], 2'b0}),  // PC for fetch address with forced word alignment
+        .addrB({PC_Addr[9:2], 2'b0}),  // PC for fetch address with forced word alignment
         .dinB(W_Data),                  // Not really used but kept for the template structure, won't be enabled anyway
-        .doutB(Instr)                   // Instruction fetch
+        .doutB(Instr_Out)                   // Instruction fetch
     );
+
+    always_comb begin
+        if (RST)
+            Instr = 32'h0000_0000; // Invalid to ensure no state change but differ from flush for clarity
+        else if (Flush_D || Stall_En)
+            Instr = 32'h0000_0013; // NOP
+        else
+            Instr = Instr_Out;
+    end
 
     always_comb begin
         case (MEM_Control)
             MEM_BYTE: 
                 case (RW_Addr[1:0])
-                    2'b00: R_Data = {{24{R_Data[7]}}, R_Data[7:0]};
-                    2'b01: R_Data = {{24{R_Data[15]}}, R_Data[15:8]};
-                    2'b10: R_Data = {{24{R_Data[23]}}, R_Data[23:16]};
-                    default: R_Data = {{24{R_Data[31]}}, R_Data[31:24]};
+                    2'b00: R_Data = {{24{Data_Out[7]}}, Data_Out[7:0]};
+                    2'b01: R_Data = {{24{Data_Out[15]}}, Data_Out[15:8]};
+                    2'b10: R_Data = {{24{Data_Out[23]}}, Data_Out[23:16]};
+                    default: R_Data = {{24{Data_Out[31]}}, Data_Out[31:24]};
                 endcase
             MEM_BYTE_UNSIGNED: 
                 case (RW_Addr[1:0])
-                    2'b00: R_Data = {24'b0, R_Data[7:0]};
-                    2'b01: R_Data = {24'b0, R_Data[15:8]};
-                    2'b10: R_Data = {24'b0, R_Data[23:16]};
-                    default: R_Data = {24'b0, R_Data[31:24]};
+                    2'b00: R_Data = {24'b0, Data_Out[7:0]};
+                    2'b01: R_Data = {24'b0, Data_Out[15:8]};
+                    2'b10: R_Data = {24'b0, Data_Out[23:16]};
+                    default: R_Data = {24'b0, Data_Out[31:24]};
                 endcase
             MEM_HALFWORD:
                 case (RW_Addr[1])
-                    1'b0: R_Data = {{16{R_Data[15]}}, R_Data[15:8], R_Data[7:0]};
-                    default: R_Data = {{16{R_Data[31]}}, R_Data[31:24], R_Data[23:16]};
+                    1'b0: R_Data = {{16{Data_Out[15]}}, Data_Out[15:8], Data_Out[7:0]};
+                    default: R_Data = {{16{Data_Out[31]}}, Data_Out[31:24], Data_Out[23:16]};
                 endcase
             MEM_HALFWORD_UNSIGNED: 
                 case (RW_Addr[1])
-                    1'b0: R_Data = {16'b0, R_Data[15:8], R_Data[7:0]};
-                    default: R_Data = {16'b0, R_Data[31:24], R_Data[23:16]};
+                    1'b0: R_Data = {16'b0, Data_Out[15:8], Data_Out[7:0]};
+                    default: R_Data = {16'b0, Data_Out[31:24], Data_Out[23:16]};
                 endcase
-            MEM_WORD: R_Data = R_Data; // Kept for clarity
+            MEM_WORD: R_Data = Data_Out; // Kept for clarity
             default: R_Data = 32'b0;
         endcase
     end
@@ -160,7 +171,7 @@ module bytewrite_tdp_ram_rf // True-Dual-Port BRAM with Byte-wide Write Enable (
     reg [DATA_WIDTH-1:0] ram_block [(2**ADDR_WIDTH)-1:0];
 
     initial begin // Note from AMD: The external file initializing the RAM needs to be in bit vector form. External files in integer or hex format do not work.
-        $readmemb("test.data",ram_block);
+        $readmemh("src/test.hex",ram_block);
     end
 
     integer i;

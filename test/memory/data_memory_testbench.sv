@@ -14,13 +14,18 @@ module data_memory_testbench;
     logic [31:0] RW_Addr, W_Data;
     logic [31:0] Data_Out;
 
-    data_memory dmem (
+    unified dmem (
         .CLK(CLK),
+        .RST(0),
+        .Flush_D(0),
+        .Stall_En(0),
         .MEM_W_En(MEM_W_En),
         .MEM_Control(MEM_Control),
         .RW_Addr(RW_Addr),
         .W_Data(W_Data),
-        .R_Data(Data_Out)
+        .R_Data(Data_Out),
+        .PC_Addr(0),
+        .Instr(0),
     );
 
     initial CLK <= 1; // Initialize the clock
