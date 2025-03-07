@@ -12,7 +12,7 @@ module instruction_memory_testbench;
     logic CLK, RST, Flush, Stall, MEM_W_En; 
     logic [2:0] MEM_Control;
     logic [31:0] RW_Addr, W_Data;
-    logic [31:0] PC_Addr, Instr;
+    logic [31:0] PC_F, PC_D, Instr;
     logic [31:0] Data_Out;
 
     unified_memory imem (
@@ -20,7 +20,7 @@ module instruction_memory_testbench;
         .RST(RST),
         .Flush_D(Flush),
         .Stall_En(Stall),
-        .PC_Addr(PC_Addr),
+        .PC_Addr(PC_F),
         .Instr(Instr),
         .R_Data(Data_Out),
         .MEM_W_En(MEM_W_En),
@@ -40,32 +40,43 @@ module instruction_memory_testbench;
         Flush <= 0;
         RST <= 0; 
         @(posedge CLK);
-        PC_Addr <= 0;  // Initialize PC
+        PC_F <= 0;  // Initialize PC
+        @(posedge CLK);
+        PC_D <= 0; // Initialize PC_D with delay
 
         repeat (10) @ (posedge CLK); // Run some time 
-        Flush <= 1; // Flush the instruction memory
+        Flush <= 1; // Test flush (should be like flushing the IF/ID register since the output of IMEM is Instr_D is essentially the output of IF/ID)
         @(posedge CLK);
-        Flush <= 0; // Unflush the instruction memory
+        Flush <= 0; 
         repeat (10) @ (posedge CLK); // Run some more time
-        Stall <= 1; // Stall the instruction memory
+        Stall <= 1; // Test stall (like stalling IF/ID)
         @(posedge CLK);
-        Stall <= 0; // Unstall the instruction memory
+        Stall <= 0; 
+        repeat (10) @ (posedge CLK); // Run some more more time
+        RST <= 1; // Test reset (like resetting IF/ID)
+        @(posedge CLK);
+        RST <= 0; 
         repeat (10) @ (posedge CLK); // Run some time to allow for all instructions to be read
         $stop; 
     end
 
     always @ (posedge CLK) begin
-        if(!Stall) begin
-            PC_Addr <= PC_Addr + 4; // Simulate the PC incrementing normally
+        if(!Stall && !Flush) begin
+            PC_F <= PC_F + 4; // Simulate the PC incrementing normally
+            PC_D <= PC_D + 4; // Simulate the PC being passed to the decode stage
         end
     end
 
-    assertInstrCorrect: assert property (@(posedge CLK) (!RST && !Flush) |-> ##1 Instr === Reference[$past(PC_Addr)])
-            else $error("Error: Mismatch at address %h: got %h, expected %h", $sampled($past(PC_Addr)), $sampled(Instr), $sampled(Reference[$past(PC_Addr)]));
-    
-    assertStall: assert property (@(posedge CLK) Stall |-> Instr === 32'h0000_0013)
-            else $error("Error: Instruction should be blanked during a stall, got %h, expected 0x00000013", $sampled(Instr));
 
-    assertFlush: assert property (@(posedge CLK) Flush |-> Instr === 32'h0000_0013)
+    assertInstrCorrect: assert property (@(posedge CLK) (!Stall && !RST && !Flush) |-> ##1 Instr === Reference[$past(PC_F)])
+            else $error("Error: Mismatch at address %h: got %h, expected %h", $sampled($past(PC_F)), $sampled(Instr), $sampled(Reference[$past(PC_F)]));
+    
+    assertStall: assert property (@(posedge CLK) (Stall && !Flush && !RST) |-> ##1 (Instr == $past(Instr)))
+            else $error("Error: Instruction should be unchanged during a stall, got %h, expected %h", $sampled(Instr), $sampled($past(Instr)));
+
+    assertFlush: assert property (@(posedge CLK) Flush |-> ##1 Instr === 32'h0000_0013)
             else $error("Error: Instruction should have been flushed, got %h, expected 0x00000013", $sampled(Instr));
+
+    assertReset: assert property (@(posedge CLK) RST |-> ##1 (Instr == 32'h0000_0013))
+            else $error("Error: Instruction should have been reset, got %h, expected 0x00000013", $sampled(Instr));
 endmodule

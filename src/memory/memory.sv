@@ -69,7 +69,8 @@ module unified_memory (
     wire [3:0] W_En;                               // Combined write enables to pass to memory module
     wire [31:0] Data_Out;
     wire [31:0] Instr_Out;
-    
+    wire [31:0] Instr_D;
+
     assign MEM_W_En0 = MEM_W_En && ((MEM_Control == MEM_BYTE && RW_Addr[1:0] == 2'b00) || 
                                     (MEM_Control == MEM_HALFWORD && RW_Addr[1] == 1'b0) || 
                                     (MEM_Control == MEM_WORD));
@@ -101,14 +102,30 @@ module unified_memory (
         .doutB(Instr_Out)                   // Instruction fetch
     );
 
-    always_comb begin
-        if (RST)
-            Instr = 32'h0000_0000; // Invalid to ensure no state change but differ from flush for clarity
-        else if (Flush_D || Stall_En)
-            Instr = 32'h0000_0013; // NOP
-        else
-            Instr = Instr_Out;
+    // @ posedge clk if stall then instr_out = dont accept new value from memory
+    // @ posedge clk if flush then instr_out = 0x13
+    // @ posedge clk if rst then instr_out = 0x13
+    // @ posedge clk if !stall && !flush && !rst then instr_out = instr
+
+    always_ff @(posedge CLK) begin
+        if (RST) begin
+            Instr <= 32'h0000_0013;
+        end
+        else if (Flush_D) begin
+            Instr <= 32'h0000_0013;
+        end
+        else if (!Stall_En) begin
+            Instr <= Instr_Out;
+        end
     end
+
+    // Allows stall without having an extra cycle delay for normal operation
+    mux2_1 mux2_1 (
+        .SEL(Stall_En),
+        .A(Instr_Out),
+        .B(Instr),
+        .OUT(Instr_D)
+    );
 
     always_comb begin
         case (MEM_Control)
