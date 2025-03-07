@@ -61,15 +61,19 @@ module unified_memory (
     input wire [2:0] MEM_Control,
     input wire [31:0] RW_Addr, W_Data,
     input wire [31:0] PC_Addr,
-    output logic [31:0] Instr,
+    output wire [31:0] Instr,
     output logic [31:0] R_Data
     );
 
     wire MEM_W_En0, MEM_W_En1, MEM_W_En2, MEM_W_En3;   // Write enables for each memory
     wire [3:0] W_En;                               // Combined write enables to pass to memory module
     wire [31:0] Data_Out;
-    wire [31:0] Instr_Out;
-    wire [31:0] Instr_D;
+    wire [31:0] Instr_Temp; 
+    wire [31:0] RW_Word_Addr, PC_Word_Addr;
+    logic [31:0] RW_Reg; // Hold the RW address for data selection which must be delayed by one to be after the read
+    logic [2:0] MEM_Control_Reg; // Hold the MEM_Control signal for data selection which must occur after the read (1cycle)
+    logic [31:0] Instr_Reg; // Hold the instruction in case of stall
+    logic Flush_Reg, Stall_Reg, RST_Reg; // Delay signals 
 
     assign MEM_W_En0 = MEM_W_En && ((MEM_Control == MEM_BYTE && RW_Addr[1:0] == 2'b00) || 
                                     (MEM_Control == MEM_HALFWORD && RW_Addr[1] == 1'b0) || 
@@ -86,70 +90,65 @@ module unified_memory (
 
     assign W_En = {MEM_W_En3, MEM_W_En2, MEM_W_En1, MEM_W_En0};
 
+    always_ff @(posedge CLK) begin
+        if (RST) begin
+            Instr_Reg <= 32'b0;
+        end else if (Flush_D) begin
+            Instr_Reg <= 32'h0000_0013;
+        end else begin
+            Instr_Reg <= Instr_Temp;
+        end
+        Stall_Reg <= Stall_En;
+        Flush_Reg <= Flush_D;
+        RST_Reg <= RST;
+        RW_Reg <= RW_Addr;
+        MEM_Control_Reg <= MEM_Control;
+    end
+
+    assign Instr = (Stall_Reg || Flush_Reg || RST_Reg) ? Instr_Reg : Instr_Temp;
+
+    assign RW_Word_Addr = RW_Addr >> 2;
+    assign PC_Word_Addr = PC_Addr >> 2;
+
     bytewrite_tdp_ram_rf memory (
         .clkA(CLK),                     // Use the same clock for both ports but keep the template untouched.
-        .enaA(1'b1),                       // Always enabled since the design has no mechanism for seperate port enables
+        .enaA(1'b1),                    // Always enabled since the design has no mechanism for seperate port enables
         .weA(W_En),
-        .addrA(RW_Addr[9:0]),
+        .addrA(RW_Word_Addr[9:0]),
         .dinA(W_Data),
-        .doutA(Data_Out),                 // Data operation output
+        .doutA(Data_Out),               // Data operation output
 
         .clkB(CLK),
         .enaB(1'b1),
         .weB(4'b0000),                  // Don't write with this port since only dual read is needed, theres probably a better way to do it.
-        .addrB({PC_Addr[9:2], 2'b0}),  // PC for fetch address with forced word alignment
+        .addrB(PC_Word_Addr[9:0]),      // PC for fetch address 
         .dinB(W_Data),                  // Not really used but kept for the template structure, won't be enabled anyway
-        .doutB(Instr_Out)                   // Instruction fetch
-    );
-
-    // @ posedge clk if stall then instr_out = dont accept new value from memory
-    // @ posedge clk if flush then instr_out = 0x13
-    // @ posedge clk if rst then instr_out = 0x13
-    // @ posedge clk if !stall && !flush && !rst then instr_out = instr
-
-    always_ff @(posedge CLK) begin
-        if (RST) begin
-            Instr <= 32'h0000_0013;
-        end
-        else if (Flush_D) begin
-            Instr <= 32'h0000_0013;
-        end
-        else if (!Stall_En) begin
-            Instr <= Instr_Out;
-        end
-    end
-
-    // Allows stall without having an extra cycle delay for normal operation
-    mux2_1 mux2_1 (
-        .SEL(Stall_En),
-        .A(Instr_Out),
-        .B(Instr),
-        .OUT(Instr_D)
+        .doutB(Instr_Temp)              // Instruction fetch
     );
 
     always_comb begin
-        case (MEM_Control)
+        case (MEM_Control_Reg)
             MEM_BYTE: 
-                case (RW_Addr[1:0])
+                case (RW_Reg[1:0])
                     2'b00: R_Data = {{24{Data_Out[7]}}, Data_Out[7:0]};
                     2'b01: R_Data = {{24{Data_Out[15]}}, Data_Out[15:8]};
                     2'b10: R_Data = {{24{Data_Out[23]}}, Data_Out[23:16]};
                     default: R_Data = {{24{Data_Out[31]}}, Data_Out[31:24]};
                 endcase
             MEM_BYTE_UNSIGNED: 
-                case (RW_Addr[1:0])
+                case (RW_Reg[1:0])
                     2'b00: R_Data = {24'b0, Data_Out[7:0]};
                     2'b01: R_Data = {24'b0, Data_Out[15:8]};
                     2'b10: R_Data = {24'b0, Data_Out[23:16]};
                     default: R_Data = {24'b0, Data_Out[31:24]};
                 endcase
             MEM_HALFWORD:
-                case (RW_Addr[1])
+                case (RW_Reg[1])
                     1'b0: R_Data = {{16{Data_Out[15]}}, Data_Out[15:8], Data_Out[7:0]};
                     default: R_Data = {{16{Data_Out[31]}}, Data_Out[31:24], Data_Out[23:16]};
                 endcase
             MEM_HALFWORD_UNSIGNED: 
-                case (RW_Addr[1])
+                case (RW_Reg[1])
                     1'b0: R_Data = {16'b0, Data_Out[15:8], Data_Out[7:0]};
                     default: R_Data = {16'b0, Data_Out[31:24], Data_Out[23:16]};
                 endcase

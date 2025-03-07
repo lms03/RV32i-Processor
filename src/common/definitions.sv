@@ -14,8 +14,8 @@ parameter int CLOCK_PERIOD = 100; // 10 MHz
 parameter MEM_BYTE = 3'b000;
 parameter MEM_HALFWORD = 3'b001;
 parameter MEM_WORD = 3'b010;
-parameter MEM_BYTE_UNSIGNED = 3'b100;
-parameter MEM_HALFWORD_UNSIGNED = 3'b101;
+parameter MEM_BYTE_UNSIGNED = 3'b011;
+parameter MEM_HALFWORD_UNSIGNED = 3'b100;
 
 // Imm_Type_Sel parameters
 parameter IMM_I = 3'b000;

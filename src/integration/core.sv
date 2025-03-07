@@ -13,7 +13,7 @@ module core (
 
     // Fetch Signals
     wire PC_En;
-    wire [31:0] Instr_F, PC_F, PC_Plus_4_F;
+    wire [31:0] PC_F, PC_Plus_4_F;
     wire Predict_Taken_F;
 
     // Decode Signals
@@ -212,6 +212,7 @@ module core (
 
     memory memory (
         .CLK(CLK),
+        .RST(RST),
         .MEM_W_En_M(MEM_W_En_M),
         .MEM_Control_M(MEM_Control_M),
         .REG_R_Data2_M(REG_R_Data2_M),
@@ -220,8 +221,8 @@ module core (
         .Flush_D(Flush_D), // Hazard control
         .Stall_En(Stall_En),
         // ------------------------------
-        .Data_Out_Ext_M(Data_Out_Ext_M)
-        .Instr_D(Instr_D), // Output instruction read straight into decode stage
+        .Data_Out_Ext_M(Data_Out_Ext_M),
+        .Instr_D(Instr_D) // Output instruction read straight into decode stage
     );
 
     memwb_register memwb_reg (

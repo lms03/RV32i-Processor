@@ -67,7 +67,6 @@ module instruction_memory_testbench;
         end
     end
 
-
     assertInstrCorrect: assert property (@(posedge CLK) (!Stall && !RST && !Flush) |-> ##1 Instr === Reference[$past(PC_F)])
             else $error("Error: Mismatch at address %h: got %h, expected %h", $sampled($past(PC_F)), $sampled(Instr), $sampled(Reference[$past(PC_F)]));
     
@@ -77,6 +76,6 @@ module instruction_memory_testbench;
     assertFlush: assert property (@(posedge CLK) Flush |-> ##1 Instr === 32'h0000_0013)
             else $error("Error: Instruction should have been flushed, got %h, expected 0x00000013", $sampled(Instr));
 
-    assertReset: assert property (@(posedge CLK) RST |-> ##1 (Instr == 32'h0000_0013))
-            else $error("Error: Instruction should have been reset, got %h, expected 0x00000013", $sampled(Instr));
+    assertReset: assert property (@(posedge CLK) RST |-> ##1 (Instr == 32'h0000_0000))
+            else $error("Error: Instruction should have been reset, got %h, expected 0x00000000", $sampled(Instr));
 endmodule

@@ -56,9 +56,10 @@ module memwb_register (
             REG_W_En_W <= REG_W_En_M;
             Result_Src_Sel_W <= Result_Src_Sel_M;
             RD_W <= RD_M;
-            Data_Out_Ext_W <= Data_Out_Ext_M;
             ALU_Out_W <= ALU_Out_M;
             PC_Plus_4_W <= PC_Plus_4_M;
         end
     end
+
+    assign Data_Out_Ext_W = Data_Out_Ext_M; // Bypass the synchronous requirement since it is already synchronously stored into a register
 endmodule

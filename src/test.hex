@@ -79,8 +79,8 @@ FFF20293 //130 x5 -> 0 correct
 00000317 //138 x6 -> addr of string_1 (138 PC + 176) 
 0B030313 //13C x6 -> +176
 01000393 //140 x7 -> 16 correct
-00034403 //144 x8 -> 0000_0000, 0000_0011, -> 0000_0088 -> 0000_00FF Breaks at this point because imem/dmem are seperate -> remove imem and replace dmem with a true dual port template for whole ram, load with readmemh into array and load from that array into the memory.
-00030403 //148 x8 -> 0000_0000, 0000_0011, -> FFFF_FF88 -> FFFF_FFFF ??
+00034403 //144 x8 -> 0000_0000, 0000_0011, -> 0000_0088 -> 0000_00FF 
+00030403 //148 x8 -> 0000_0000, 0000_0011, -> FFFF_FF88 -> FFFF_FFFF 
 00130313 //14C x6 -> +1
 FFF38393 //150 x7 -> 15 -> 0
 FE7048E3 //154
