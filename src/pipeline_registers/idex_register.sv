@@ -67,6 +67,7 @@ module idex_register (
             MEM_W_En_E <= 1'b0;
             Jump_En_E <= 1'b0;
             Branch_En_E <= 1'b0;
+            Predict_Taken_E <= 1'b0; // Prevents hazard control logic constantly evaluating to flush
             PC_E <= 32'h2A2A_2A2A; // Debug pattern for clarity
             PC_Plus_4_E <= 32'h2A2A_2A2A;
         end
