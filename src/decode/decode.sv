@@ -177,7 +177,7 @@ module control_unit (
                             begin
                                 Result_Src_Sel = (OP == OP_I_TYPE_LOAD) ? RESULT_MEM : RESULT_ALU; 
                                 ALU_Control = (OP == OP_I_TYPE_LOAD) ? ALU_ADD : ((Func7 == F7_I_SRLI) ? ALU_SRL : ALU_SRA);
-                                MEM_Control = MEM_HALFWORD; // Specify halfword unsigned load
+                                MEM_Control = MEM_HALFWORD_UNSIGNED; // Specify halfword unsigned load
                             end
                         F3_I_ORI: ALU_Control = ALU_OR; // ORI
                         F3_I_ANDI: ALU_Control = ALU_AND; // ANDI

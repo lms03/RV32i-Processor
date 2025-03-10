@@ -26,7 +26,7 @@ module core_testbench ();
         @(posedge CLK);
         RST <= 0;
 
-        repeat (100) @ (posedge CLK); 
+        repeat (500) @ (posedge CLK); 
         $stop;
     end
 endmodule
