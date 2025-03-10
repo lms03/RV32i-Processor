@@ -20,7 +20,7 @@ module exmem_register (
 
     // Register data
     input wire [4:0] RD_E,
-    input wire [31:0] REG_R_Data2_E,
+    input wire [31:0] SrcB_Reg_E,
 
     // ALU output
     input wire [31:0] ALU_Out_E,
@@ -37,7 +37,7 @@ module exmem_register (
 
     // Register data
     output logic [4:0] RD_M,
-    output logic [31:0] REG_R_Data2_M,
+    output logic [31:0] SrcB_Reg_M,
 
     // ALU output
     output logic [31:0] ALU_Out_M,
@@ -57,7 +57,7 @@ module exmem_register (
             MEM_Control_M <= MEM_Control_E;
             Result_Src_Sel_M <= Result_Src_Sel_E;
             RD_M <= RD_E;
-            REG_R_Data2_M <= REG_R_Data2_E;
+            SrcB_Reg_M <= SrcB_Reg_E;
             ALU_Out_M <= ALU_Out_E;
             PC_Plus_4_M <= PC_Plus_4_E;
         end

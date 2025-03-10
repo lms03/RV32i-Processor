@@ -21,7 +21,7 @@ module memory (
     input wire [2:0] MEM_Control_M,
 
     // Register data
-    input wire [31:0] REG_R_Data2_M,
+    input wire [31:0] SrcB_Reg_M,
 
     // ALU output
     input wire [31:0] ALU_Out_M,
@@ -48,7 +48,7 @@ module memory (
         .MEM_Control(MEM_Control_M),
         .RW_Addr(ALU_Out_M),
         .PC_Addr(PC_F),
-        .W_Data(REG_R_Data2_M),
+        .W_Data(SrcB_Reg_M),
         .Instr(Instr_D),
         .R_Data(Data_Out_Ext_M),
         .Flush_D(Flush_D),

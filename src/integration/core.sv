@@ -53,7 +53,7 @@ module core (
     wire [2:0] MEM_Control_M;
     wire [1:0] Result_Src_Sel_M;
     wire [4:0] RD_M;
-    wire [31:0] REG_R_Data2_M;
+    wire [31:0] SrcB_Reg_M;
     wire [31:0] ALU_Out_M;
     wire [31:0] PC_Plus_4_M;
     wire [31:0] Data_Out_Ext_M;
@@ -196,7 +196,7 @@ module core (
         .MEM_Control_E(MEM_Control_E),
         .Result_Src_Sel_E(Result_Src_Sel_E),
         .RD_E(RD_E),
-        .REG_R_Data2_E(REG_R_Data2_E),
+        .SrcB_Reg_E(SrcB_Reg_E),
         .ALU_Out_E(ALU_Out_E),
         .PC_Plus_4_E(PC_Plus_4_E),
         // ------------------------------
@@ -205,7 +205,7 @@ module core (
         .MEM_Control_M(MEM_Control_M),
         .Result_Src_Sel_M(Result_Src_Sel_M),
         .RD_M(RD_M),
-        .REG_R_Data2_M(REG_R_Data2_M),
+        .SrcB_Reg_M(SrcB_Reg_M),
         .ALU_Out_M(ALU_Out_M),
         .PC_Plus_4_M(PC_Plus_4_M)
     );
@@ -215,7 +215,7 @@ module core (
         .RST(RST),
         .MEM_W_En_M(MEM_W_En_M),
         .MEM_Control_M(MEM_Control_M),
-        .REG_R_Data2_M(REG_R_Data2_M),
+        .SrcB_Reg_M(SrcB_Reg_M),
         .ALU_Out_M(ALU_Out_M),
         .PC_F(PC_F), // PC address to fetch instructions
         .Flush_D(Flush_D), // Hazard control

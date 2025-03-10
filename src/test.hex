@@ -76,7 +76,7 @@ FFF00093 //118 x1 -> -1 correct
 0020C233 //12C x4 -> 1 correct
 FFF20293 //130 x5 -> 0 correct
 0C029663 //134 BNEZ ignored correct
-00000317 //138 x6 -> addr of string_1 (138 PC + 176) (BYTE LOOP)
+00000317 //138 x6 -> addr of string_1 (1E8) (BYTE LOOP)
 0B030313 //13C x6 -> +176
 01000393 //140 x7 -> 16 correct
 00034403 //144 x8 -> 0000_0000, 0000_0011, -> 0000_0088 -> 0000_00FF 
@@ -84,7 +84,7 @@ FFF20293 //130 x5 -> 0 correct
 00130313 //14C x6 -> +1
 FFF38393 //150 x7 -> 15 -> 0
 FE7048E3 //154
-00000317 //158 x6 -> addr of string_1 (138 PC + 144) (halfword loop)
+00000317 //158 x6 -> addr of string_1 (1E8) (halfword loop)
 09030313 //15C x6 -> +144
 00800393 //160 x7 -> 8
 00035403 //164 x8 -> 0000_1100, 0000_3322 -> 0000_9988 -> 0000_FFEE
@@ -92,28 +92,28 @@ FE7048E3 //154
 00230313 //16C
 FFF38393 //170
 FE7048E3 //174 BGTZ halfword loop 
-00000317 //178 x6 -> addr of string_1 (138 PC + ??) (word loop)
-07030313 //17C x6 -> +
+00000317 //178 x6 -> addr of string_1 (1E8) (word loop)
+07030313 //17C x6 -> +70
 00400393 //180 x7 -> 4
 00036403 //184 LWU, should remove or fix. Decodes to OR instruction
 00032403 //188 x8 -> 3322_1100, 7766_5544, BBAA_9988, FFEE_DDCC
 00430313 //18C 
 FFF38393 //190 
 FE7048E3 //194 BGTZ word loop
-332213B7 //198
-10038393 //19C
-FF032403 //1A0
-06741063 //1A4
-00000317 //1A8 
+332213B7 //198 x7 -> 209441
+10038393 //19C x7 -> 209441+256
+FF032403 //1A0 x8 -> 3322_1100
+06741063 //1A4 BNE broken3
+00000317 //1A8 x6 -> addr of word_1 (1F8)
 05030313 //1AC 
-12345437 //1B0
+12345437 //1B0 x8 -> 1234_5678
 67840413 //1B4
-00832023 //1B8
-00230383 //1BC
-01045493 //1C0 
-0FF4F493 //1C4 
-02939E63 //1C8 
-00938263 //1CC 
+00832023 //1B8 Store x8 -> x6 Address
+00230383 //1BC x7 -> Byte address x6 + 2 0000_0022 since store hasn't set yet, would be 0000_0034 if hazard is controlled
+01045493 //1C0 x9 -> x8 right shifted by 16
+0FF4F493 //1C4 x9 -> x9 AND 255 (Take lower 2 bytes, 34)
+02939E63 //1C8 bne ignored
+00938263 //1CC beq	x7, x9 taken
 00100073 //1D0
 FFDFF06F //1D4 
 00430313 //1D8 

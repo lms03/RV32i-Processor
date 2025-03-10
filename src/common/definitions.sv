@@ -83,10 +83,10 @@ parameter OP_AUIPC = 7'b0010111;
 parameter OP_J_TYPE = 7'b1101111;
 parameter OP_JALR = 7'b1100111;
 parameter OP_B_TYPE = 7'b1100011;
-parameter OP_I_TYPE_LOAD = 7'b0000011;
-parameter OP_I_TYPE = 7'b0010011;
-parameter OP_S_TYPE = 7'b0100011;
-parameter OP_R_TYPE = 7'b0110011;
+parameter OP_I_TYPE_LOAD = 7'b0000011; 
+parameter OP_I_TYPE = 7'b0010011; 
+parameter OP_S_TYPE = 7'b0100011; 
+parameter OP_R_TYPE = 7'b0110011; 
 parameter OP_FENCE_PAUSE = 7'b0001111;
 parameter OP_ECALL_EBREAK = 7'b1110011;
 
@@ -126,6 +126,7 @@ parameter F3_B_BGEU = 3'b111;
 // Func7 R-Type parameters
 parameter F7_R_ADD = 7'b0000000;
 parameter F7_R_SRL = 7'b0000000;
+parameter F7_R_MUL = 7'b0000001;
 
 // Func7 I-Type parameters
 parameter F7_I_SRLI = 7'b0000000;

@@ -112,33 +112,35 @@ module control_unit (
         case (OP)
             OP_R_TYPE:
                 begin
-                    // R-Type defaults
-                    REG_W_En = 1; // Store result to register
-                    ALU_SrcA_Sel = SRCA_REG; // Select register data
-                    ALU_SrcB_Sel = SRCB_REG; // Select register data 
-                    Result_Src_Sel = RESULT_ALU; // Select ALU output
-                    case (Func3)
-                        F3_R_ADD_SUB: ALU_Control = (Func7 == F7_R_ADD) ? ALU_ADD : ALU_SUB; 
-                        F3_R_SLL: ALU_Control = ALU_SLL; 
-                        F3_R_SLT: ALU_Control = ALU_BLT; // SLT uses same as BLT
-                        F3_R_SLTU: ALU_Control = ALU_BLTU; // SLTU uses same as BLTU
-                        F3_R_XOR: ALU_Control = ALU_XOR; 
-                        F3_R_SRL_SRA: ALU_Control = (Func7 == F7_R_SRL) ? ALU_SRL : ALU_SRA;
-                        F3_R_OR: ALU_Control = ALU_OR; 
-                        F3_R_AND: ALU_Control = ALU_AND; 
-                        default: ALU_Control = 4'bX; // Propagate X to highlight error
-                    endcase
+                    if (Func7 != F7_R_MUL) begin // MUL is unsupported so will be treated as a NOP that cannot alter state
+                        // R-Type defaults
+                        REG_W_En = 1; // Store result to register
+                        ALU_SrcA_Sel = SRCA_REG; // Select register data
+                        ALU_SrcB_Sel = SRCB_REG; // Select register data 
+                        Result_Src_Sel = RESULT_ALU; // Select ALU output
+                        case (Func3)
+                            F3_R_ADD_SUB: ALU_Control = (Func7 == F7_R_ADD) ? ALU_ADD : ALU_SUB; 
+                            F3_R_SLL: ALU_Control = ALU_SLL; 
+                            F3_R_SLT: ALU_Control = ALU_BLT; // SLT uses same as BLT
+                            F3_R_SLTU: ALU_Control = ALU_BLTU; // SLTU uses same as BLTU
+                            F3_R_XOR: ALU_Control = ALU_XOR; 
+                            F3_R_SRL_SRA: ALU_Control = (Func7 == F7_R_SRL) ? ALU_SRL : ALU_SRA;
+                            F3_R_OR: ALU_Control = ALU_OR; 
+                            F3_R_AND: ALU_Control = ALU_AND; 
+                            default: ; // Just use defaults for unsupported instructions
+                        endcase
+                    end
                 end
-            OP_I_TYPE_LOAD, OP_JALR, OP_I_TYPE:
+            OP_JALR, OP_I_TYPE:
                 begin
                     // I-Type defaults
                     REG_W_En = 1'b1; // Store result to register
                     ALU_SrcA_Sel = SRCA_REG; // Select register data
                     ALU_SrcB_Sel = SRCB_IMM; // Select the immediate   
                     Imm_Type_Sel = IMM_I; // I-Type immediate  
-                    Result_Src_Sel = RESULT_ALU; // Changed depending on if JALR/LOAD or not but default to reduce repetition
+                    Result_Src_Sel = RESULT_ALU; // Changed depending on if JALR or not but default to reduce repetition
                     case (Func3)
-                        F3_I_JALR_ADDI_LB: // JALR, ADDI or LB
+                        F3_I_JALR_ADDI_LB: // JALR or ADDI
                             case (OP)
                                 OP_JALR: // JALR
                                     begin
@@ -146,57 +148,67 @@ module control_unit (
                                         Branch_Src_Sel = BRANCH_REG; // JALR Uses register data for target calculation
                                         Result_Src_Sel = RESULT_PC4; // Select PC+4 for result
                                     end
-                                OP_I_TYPE, OP_I_TYPE_LOAD:  // ADDI and LB
+                                OP_I_TYPE:  // ADDI 
                                     begin
-                                        Result_Src_Sel = (OP == OP_I_TYPE_LOAD) ? RESULT_MEM : RESULT_ALU; // LOAD uses memory, ADDI uses ALU
-                                        MEM_Control = MEM_BYTE; // Specify byte load for LB
-                                        ALU_Control = ALU_ADD; // Load address calculation uses same operation as ADDI
+                                        Result_Src_Sel = RESULT_ALU; // ADDI uses ALU
+                                        ALU_Control = ALU_ADD;
                                     end
-                                default: ALU_Control = 4'bX; // Propagate X to highlight error
+                                default: ; // Just use defaults for unsupported instructions
                             endcase
-                        F3_I_LH_SLLI: // LH or SLLI
+                        F3_I_LH_SLLI: // SLLI
                             begin
-                                Result_Src_Sel = (OP == OP_I_TYPE_LOAD) ? RESULT_MEM : RESULT_ALU; // LOAD uses memory, SLLI uses ALU
-                                ALU_Control = (OP == OP_I_TYPE_LOAD) ? ALU_ADD : ALU_SLL;
-                                MEM_Control = MEM_HALFWORD; // Specify halfword load
+                                Result_Src_Sel = RESULT_ALU; // SLLI uses ALU
+                                ALU_Control = ALU_SLL;
                             end
-                        F3_I_LW_SLTI: // LW or SLTI
+                        F3_I_LW_SLTI: // SLTI
                             begin
-                                Result_Src_Sel = (OP == OP_I_TYPE_LOAD) ? RESULT_MEM : RESULT_ALU; 
-                                ALU_Control = (OP == OP_I_TYPE_LOAD) ? ALU_ADD : ALU_BLT; // SLTI uses same as BLT
-                                MEM_Control = MEM_WORD; // Specify word load
+                                Result_Src_Sel = RESULT_ALU; 
+                                ALU_Control = ALU_BLT; // SLTI uses same as BLT
                             end
                         F3_I_SLTIU: ALU_Control = ALU_BLTU; // SLTIU uses same as BLTU
-                        F3_I_LBU_XORI: // LBU or XORI
+                        F3_I_LBU_XORI: // XORI
                             begin
-                                Result_Src_Sel = (OP == OP_I_TYPE_LOAD) ? RESULT_MEM : RESULT_ALU; 
-                                ALU_Control = (OP == OP_I_TYPE_LOAD) ? ALU_ADD : ALU_XOR;
-                                MEM_Control = MEM_BYTE_UNSIGNED; // Specify byte unsigned load
+                                Result_Src_Sel = RESULT_ALU; 
+                                ALU_Control = ALU_XOR;
                             end
-                        F3_I_LHU_SRLI_SRAI: // LHU or SRLI or SRAI
+                        F3_I_LHU_SRLI_SRAI: // SRLI or SRAI
                             begin
-                                Result_Src_Sel = (OP == OP_I_TYPE_LOAD) ? RESULT_MEM : RESULT_ALU; 
-                                ALU_Control = (OP == OP_I_TYPE_LOAD) ? ALU_ADD : ((Func7 == F7_I_SRLI) ? ALU_SRL : ALU_SRA);
-                                MEM_Control = MEM_HALFWORD_UNSIGNED; // Specify halfword unsigned load
+                                Result_Src_Sel = RESULT_ALU; 
+                                ALU_Control = (Func7 == F7_I_SRLI) ? ALU_SRL : ALU_SRA;
                             end
                         F3_I_ORI: ALU_Control = ALU_OR; // ORI
                         F3_I_ANDI: ALU_Control = ALU_AND; // ANDI
-                        default: ALU_Control = 4'bX; // Propagate X to highlight error
+                        default: ; // Just use defaults for unsupported instructions
+                    endcase
+                end
+            OP_I_TYPE_LOAD:
+                begin
+                    ALU_SrcA_Sel = SRCA_REG; // Select register data
+                    ALU_SrcB_Sel = SRCB_IMM; // Select the immediate   
+                    Imm_Type_Sel = IMM_I; // I-Type immediate  
+                    ALU_Control = ALU_ADD; // Load address calculation uses same operation as ADD/ADDI
+                    Result_Src_Sel = RESULT_MEM; // LOAD uses result from MEM
+                    case (Func3)
+                        F3_I_JALR_ADDI_LB: begin MEM_Control = MEM_BYTE; REG_W_En = 1'b1; end // LB, Specify byte load, load result to register
+                        F3_I_LBU_XORI: begin MEM_Control = MEM_BYTE_UNSIGNED; REG_W_En = 1'b1; end // LBU, Specify byte unsigned load
+                        F3_I_LH_SLLI: begin MEM_Control = MEM_HALFWORD; REG_W_En = 1'b1; end // LH, Specify halfword load
+                        F3_I_LHU_SRLI_SRAI: begin MEM_Control = MEM_HALFWORD_UNSIGNED; REG_W_En = 1'b1; end // LHU, Specify halfword unsigned load
+                        F3_I_LW_SLTI: begin MEM_Control = MEM_WORD; REG_W_En = 1'b1; end // LW, Specify word load
+                        default: ; // Use default values above in case of unsupported LWU/LD or illegal instructions
                     endcase
                 end
             OP_S_TYPE:
                 begin
                     // S-Type defaults
-                    MEM_W_En = 1; // Store to memory
                     ALU_Control = ALU_ADD; // Address calculation uses same operation as ADD
                     ALU_SrcA_Sel = SRCA_REG; // Select register data
                     ALU_SrcB_Sel = SRCB_IMM; // Select the immediate
                     Imm_Type_Sel = IMM_S; // S-Type immediate
                     case (Func3)
-                        F3_S_SB: MEM_Control = MEM_BYTE; // SB, Specify byte store
-                        F3_S_SH: MEM_Control = MEM_HALFWORD; // SH, Specify halfword store
-                        F3_S_SW: MEM_Control = MEM_WORD; // SW, Specify word store
-                        default: MEM_Control = 3'bX; // Propagate X to highlight error
+                        F3_S_SB: begin MEM_Control = MEM_BYTE; MEM_W_En = 1; end // SB, Specify byte store and allow memory write
+                        F3_S_SH: begin MEM_Control = MEM_HALFWORD; MEM_W_En = 1; end // SH, Specify halfword store and allow memory write
+                        F3_S_SW: begin MEM_Control = MEM_WORD; MEM_W_En = 1; end // SW, Specify word store and allow memory write
+                        default: ; // Use default values above in case of unsupported SD or illegal instructions
                     endcase
                 end
             OP_B_TYPE:
@@ -214,7 +226,7 @@ module control_unit (
                         F3_B_BGE: ALU_Control = ALU_BGE; 
                         F3_B_BLTU: ALU_Control = ALU_BLTU; 
                         F3_B_BGEU: ALU_Control = ALU_BGEU; 
-                        default: ALU_Control = 4'bX; // Propagate X to highlight error
+                        default: ; // Use default values above in case of unsupported SD / illegal instructions
                     endcase
                 end
             OP_LUI, OP_AUIPC:
@@ -234,9 +246,14 @@ module control_unit (
                     Imm_Type_Sel = IMM_J; // J-Type immediate
                     Result_Src_Sel = RESULT_PC4; // Select PC+4 for result
                 end
-            OP_FENCE_PAUSE, OP_ECALL_EBREAK: // FENCE, PAUSE, ECALL, EBREAK all treated as NOPs, so they use the defaults above to ensure processor state is unchanged
-                break;
-            default: // Illegal/Unsupported instruction so ensure processor state is unchanged
+            OP_FENCE_PAUSE, OP_ECALL_EBREAK: //FENCE, PAUSE, ECALL, EBREAK all treated as NOPs, so they ensure processor state is unchanged 
+                begin
+                    REG_W_En = 0; // Don't alter registers
+                    MEM_W_En = 0; // Don't alter memory
+                    Jump_En = 0; // Don't alter control flow
+                    Branch_En = 0; // Don't alter control flow
+                end
+            default: // Illegal/Unsupported instruction so ensure processor state is unchanged. 
                 begin
                     REG_W_En = 0; // Don't alter registers
                     MEM_W_En = 0; // Don't alter memory
