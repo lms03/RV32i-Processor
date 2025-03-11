@@ -8,7 +8,7 @@
 //                  A true-dual-port BRAM template from AMD to represent the memory for the processor, 
 //                  load/store uses port A and instruction fetch uses port B.
 // Author: Luke Shepherd
-// Date Modified: February 2025                                                                                                                                                                                                                                                       
+// Date Modified: March 2025                                                                                                                                                                                                                                                       
 //////////////////////////////////////////////////////////////////////////////////
 
 import definitions::*;
@@ -69,8 +69,8 @@ module unified_memory (
     wire [3:0] W_En;                               // Combined write enables to pass to memory module
     wire [31:0] Data_Out;
     wire [31:0] Instr_Temp; 
-    wire [31:0] RW_Word_Addr, PC_Word_Addr;
-    logic [31:0] RW_Reg; // Hold the RW address for data selection which must be delayed by one to be after the read
+    wire [9:0] RW_Word_Addr, PC_Word_Addr;
+    logic [1:0] RW_Reg; // Hold the RW address for data selection which must be delayed by one to be after the read (Only need bottom 2 bits)
     logic [2:0] MEM_Control_Reg; // Hold the MEM_Control signal for data selection which must occur after the read (1cycle)
     logic [31:0] Instr_Reg; // Hold the instruction in case of stall
     logic Flush_Reg, Stall_Reg, RST_Reg; // Delay signals 
@@ -101,27 +101,27 @@ module unified_memory (
         Stall_Reg <= Stall_En;
         Flush_Reg <= Flush_D;
         RST_Reg <= RST;
-        RW_Reg <= RW_Addr;
+        RW_Reg <= RW_Addr[1:0];
         MEM_Control_Reg <= MEM_Control;
     end
 
     assign Instr = (Stall_Reg || Flush_Reg || RST_Reg) ? Instr_Reg : Instr_Temp;
 
-    assign RW_Word_Addr = RW_Addr >> 2;
-    assign PC_Word_Addr = PC_Addr >> 2;
+    assign RW_Word_Addr[9:0] = RW_Addr >> 2;
+    assign PC_Word_Addr[9:0] = PC_Addr >> 2;
 
     bytewrite_tdp_ram_rf memory (
         .clkA(CLK),                     // Use the same clock for both ports but keep the template untouched.
         .enaA(1'b1),                    // Always enabled since the design has no mechanism for seperate port enables
         .weA(W_En),
-        .addrA(RW_Word_Addr[9:0]),
+        .addrA(RW_Word_Addr),
         .dinA(W_Data),
         .doutA(Data_Out),               // Data operation output
 
         .clkB(CLK),
         .enaB(1'b1),
         .weB(4'b0000),                  // Don't write with this port since only dual read is needed, theres probably a better way to do it.
-        .addrB(PC_Word_Addr[9:0]),      // PC for fetch address 
+        .addrB(PC_Word_Addr),      // PC for fetch address 
         .dinB(W_Data),                  // Not really used but kept for the template structure, won't be enabled anyway
         .doutB(Instr_Temp)              // Instruction fetch
     );
@@ -187,7 +187,7 @@ module bytewrite_tdp_ram_rf // True-Dual-Port BRAM with Byte-wide Write Enable (
     reg [DATA_WIDTH-1:0] ram_block [(2**ADDR_WIDTH)-1:0];
 
     initial begin // Note from AMD: The external file initializing the RAM needs to be in bit vector form. External files in integer or hex format do not work.
-        $readmemh("src/test.hex",ram_block);
+        $readmemh("/home/s53512ls/git/RV32i-Processor/src/test.hex",ram_block);
     end
 
     integer i;

@@ -30,7 +30,7 @@ module idex_register (
 
     // PC
     input wire [31:0] PC_D, PC_Plus_4_D,
-    input wire Predict_Taken_D,
+    input wire Predict_Taken_D, Valid_D,
 
     // -----------------------------------------------------------
     
@@ -51,7 +51,7 @@ module idex_register (
 
     // PC
     output logic [31:0] PC_E, PC_Plus_4_E,
-    output logic Predict_Taken_E
+    output logic Predict_Taken_E, Valid_E
     );
 
     always_ff @ (posedge CLK) begin // Synchronous flush 
@@ -61,6 +61,7 @@ module idex_register (
             Jump_En_E <= 1'b0;
             Branch_En_E <= 1'b0;
             Predict_Taken_E <= 1'b0; // Prevent headaches from uninitialized values used in fetch
+            Valid_E <= 1'b0; 
         end
         else if (Flush_E) begin // Insert NOP (ADDI x0, x0, 0) and set PC for clarity
             REG_W_En_E <= 1'b0; // Disable state changing signals
@@ -68,6 +69,7 @@ module idex_register (
             Jump_En_E <= 1'b0;
             Branch_En_E <= 1'b0;
             Predict_Taken_E <= 1'b0; // Prevents hazard control logic constantly evaluating to flush
+            Valid_E <= 1'b0;
             PC_E <= 32'h2A2A_2A2A; // Debug pattern for clarity
             PC_Plus_4_E <= 32'h2A2A_2A2A;
         end
@@ -91,6 +93,7 @@ module idex_register (
             PC_E <= PC_D; 
             PC_Plus_4_E <= PC_Plus_4_D;
             Predict_Taken_E <= Predict_Taken_D;
+            Valid_E <= Valid_D;
         end
     end
 endmodule

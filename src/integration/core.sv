@@ -14,7 +14,7 @@ module core (
     // Fetch Signals
     wire PC_En;
     wire [31:0] PC_F, PC_Plus_4_F;
-    wire Predict_Taken_F;
+    wire Predict_Taken_F, Valid_F;
 
     // Decode Signals
     wire Flush_D, Stall_En;
@@ -28,7 +28,7 @@ module core (
     wire [4:0] RD_D, RS1_D, RS2_D;
     wire [31:0] REG_R_Data1_D, REG_R_Data2_D;
     wire [31:0] Imm_Ext_D;
-    wire Predict_Taken_D;
+    wire Predict_Taken_D, Valid_D;
 
     // Execute Signals
     wire Flush_E;
@@ -46,7 +46,7 @@ module core (
     wire [31:0] Imm_Ext_E;
     wire Branch_Taken_E;
     wire [31:0] ALU_Out_E, PC_Target_E;
-    wire Predict_Taken_E;
+    wire Predict_Taken_E, Valid_E;
 
     // Memory Signals
     wire REG_W_En_M, MEM_W_En_M;
@@ -73,13 +73,15 @@ module core (
         .PC_En(PC_En),
         .Predict_Taken_E(Predict_Taken_E),
         .Branch_Taken_E(Branch_Taken_E),
+        .Valid_E(Valid_E),
         .PC_Plus_4_E(PC_Plus_4_E),
         .PC_Target_E(PC_Target_E),
         .PC_E(PC_E),
         // ------------------------------ 
         .PC_F(PC_F),
         .PC_Plus_4_F(PC_Plus_4_F),
-        .Predict_Taken_F(Predict_Taken_F)
+        .Predict_Taken_F(Predict_Taken_F),
+        .Valid_F(Valid_F)
     );
 
     ifid_register ifid_reg (
@@ -90,10 +92,12 @@ module core (
         .PC_F(PC_F),
         .PC_Plus_4_F(PC_Plus_4_F),
         .Predict_Taken_F(Predict_Taken_F),
+        .Valid_F(Valid_F),
         // ------------------------------
         .PC_D(PC_D),
         .PC_Plus_4_D(PC_Plus_4_D),
-        .Predict_Taken_D(Predict_Taken_D)
+        .Predict_Taken_D(Predict_Taken_D),
+        .Valid_D(Valid_D)
     );
 
     decode decode (
@@ -144,6 +148,7 @@ module core (
         .PC_D(PC_D),
         .PC_Plus_4_D(PC_Plus_4_D),
         .Predict_Taken_D(Predict_Taken_D),
+        .Valid_D(Valid_D),
         // ------------------------------
         .REG_W_En_E(REG_W_En_E),
         .MEM_W_En_E(MEM_W_En_E),
@@ -163,7 +168,8 @@ module core (
         .Imm_Ext_E(Imm_Ext_E),
         .PC_E(PC_E),
         .PC_Plus_4_E(PC_Plus_4_E),
-        .Predict_Taken_E(Predict_Taken_E)
+        .Predict_Taken_E(Predict_Taken_E),
+        .Valid_E(Valid_E)
     );
 
     execute execute (

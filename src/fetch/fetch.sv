@@ -22,17 +22,17 @@ import definitions::*;
 
 module fetch (
     input wire CLK, RST, PC_En,
-    input wire Predict_Taken_E, Branch_Taken_E,
+    input wire Predict_Taken_E, Branch_Taken_E, Valid_E,
     input wire [31:0] PC_Target_E, PC_Plus_4_E, PC_E,
     output wire [31:0] PC_F, PC_Plus_4_F, // Instr_F goes directly to decode since it is read into a register.
-    output wire Predict_Taken_F
+    output wire Predict_Taken_F, Valid_F
     );
 
     wire [31:0] PC_In, PC_Next, PC_Predict, PC_Prediction;
-    wire Predict_Out, PC_Overwrite_Sel, PC_Sel, Valid;
+    wire Predict_Out, PC_Overwrite_Sel, PC_Sel;
 
     assign PC_Sel = !Predict_Taken_E && Branch_Taken_E; // If we didn't predict and we should have taken we need to overwrite
-    assign Predict_Taken_F = Predict_Out && Valid; // Only predict if we have a corresponding branch target prediction
+    assign Predict_Taken_F = Predict_Out && Valid_F; // Only predict if we have a corresponding branch target prediction
     assign PC_Overwrite_Sel = Predict_Taken_E && !Branch_Taken_E; // Overwrite if we predicted it to be taken but it shouldn't have been
 
     program_counter pc (
@@ -54,6 +54,7 @@ module fetch (
         .RST(RST),
         .Branch_Taken(Branch_Taken_E),
         .Predict_Taken(Predict_Taken_E),
+        .Valid(Valid_E),
         .Predict_Out(Predict_Out)
     );
 
@@ -64,7 +65,7 @@ module fetch (
         .PC_F(PC_F),
         .PC_E(PC_E),
         .Branch_Taken(Branch_Taken_E),
-        .Valid(Valid),
+        .Valid(Valid_F),
         .PC_Prediction(PC_Prediction)
     );
 
@@ -108,47 +109,48 @@ module program_counter (
 endmodule
 
 module branch_predictor (
-    input wire CLK, RST, Branch_Taken, Predict_Taken,
+    input wire CLK, RST, Branch_Taken, Predict_Taken, Valid,
     output logic Predict_Out
     );
     
     logic [1:0] current_state, next_state;
 
     always_ff @ (posedge CLK) begin
-        if(RST)
-            current_state <= WEAKLY_TAKEN; // Initialize/default to weakly taken
-        else
-            current_state <= next_state;
+        if (RST) current_state <= WEAKLY_TAKEN; // Initialize/default to weakly taken
+        else current_state <= next_state;
     end
 
     always_comb begin
-        case (current_state)
-            STRONGLY_UNTAKEN: 
-                if (Predict_Taken == Branch_Taken) // If prediction correct
-                    next_state = WEAKLY_UNTAKEN;
-                else
-                    next_state = STRONGLY_UNTAKEN;
-            WEAKLY_UNTAKEN: // These two cases could use +- but this is more readable
-                if (Predict_Taken == Branch_Taken) 
-                    next_state = WEAKLY_TAKEN;
-                else
-                    next_state = STRONGLY_UNTAKEN;
-            WEAKLY_TAKEN:
-                if (Predict_Taken == Branch_Taken)
-                    next_state = STRONGLY_TAKEN;
-                else
-                    next_state = WEAKLY_UNTAKEN;
-            STRONGLY_TAKEN:
-                if (Predict_Taken == Branch_Taken)
-                    next_state = STRONGLY_TAKEN;
-                else
-                    next_state = WEAKLY_TAKEN;
-            default:
-                next_state = WEAKLY_TAKEN;   
-        endcase
+        if (Valid) begin
+            case (current_state)
+                STRONGLY_UNTAKEN: 
+                    if (Predict_Taken == Branch_Taken) // If prediction correct
+                        next_state = WEAKLY_UNTAKEN;
+                    else
+                        next_state = STRONGLY_UNTAKEN;
+                WEAKLY_UNTAKEN: // These two cases could use +- but this is more readable
+                    if (Predict_Taken == Branch_Taken) 
+                        next_state = WEAKLY_TAKEN;
+                    else
+                        next_state = STRONGLY_UNTAKEN;
+                WEAKLY_TAKEN:
+                    if (Predict_Taken == Branch_Taken)
+                        next_state = STRONGLY_TAKEN;
+                    else
+                        next_state = WEAKLY_UNTAKEN;
+                STRONGLY_TAKEN:
+                    if (Predict_Taken == Branch_Taken)
+                        next_state = STRONGLY_TAKEN;
+                    else
+                        next_state = WEAKLY_TAKEN;
+                default:
+                    next_state = WEAKLY_TAKEN;   
+            endcase
+        end
+        else next_state = current_state; // Don't change state for invalid (non-branch) instructions
     end
 
-    assign Predict_Out = (current_state == STRONGLY_TAKEN) || (current_state == WEAKLY_TAKEN);
+    assign Predict_Out = current_state[1]; // MSB of state indicated taken or not
 endmodule
 
 module branch_target_buffer (
