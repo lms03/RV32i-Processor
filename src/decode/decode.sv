@@ -44,11 +44,13 @@ module decode (
     //      Register data     //
     output wire [4:0] RD_D, RS1_D, RS2_D,
     output wire [31:0] REG_R_Data1_D, REG_R_Data2_D,
-    
-    //   Extended immediate   //
-    output wire [31:0] Imm_Ext_D
 
-    /*========================*/
+    // Extended immediate
+    output wire [31:0] Imm_Ext_D,
+
+    // FPGA LEDs
+    output wire FPGA_RED1, FPGA_RED2,
+    output wire FPGA_GRN1, FPGA_GRN2
     );
 
     wire [2:0] Imm_Type_Sel; 
@@ -71,7 +73,12 @@ module decode (
         .Branch_Src_Sel(Branch_Src_Sel_D),
         .ALU_SrcA_Sel(ALU_SrcA_Sel_D),
         .ALU_SrcB_Sel(ALU_SrcB_Sel_D),
-        .Result_Src_Sel(Result_Src_Sel_D)
+        .Result_Src_Sel(Result_Src_Sel_D),
+
+        .FPGA_RED1(FPGA_RED1),
+        .FPGA_RED2(FPGA_RED2),
+        .FPGA_GRN1(FPGA_GRN1),
+        .FPGA_GRN2(FPGA_GRN2)
     );
 
     register_file reg_file (
@@ -102,7 +109,9 @@ module control_unit (
     output logic [2:0] Imm_Type_Sel, // Determines how the immediate should be handled.
     output logic Branch_Src_Sel, // Selects the input of the branch target calclulation (PC or Immediate) to allow JALR.
     output logic ALU_SrcA_Sel, ALU_SrcB_Sel, // Selects the ALU inputs between registers and PC/Immediate.
-    output logic [1:0] Result_Src_Sel // Selects the source of the result, 11 is unused.
+    output logic [1:0] Result_Src_Sel, // Selects the source of the result, 11 is unused.
+    output logic FPGA_RED1, FPGA_RED2,
+    output logic FPGA_GRN1, FPGA_GRN2
     );
 
     always_comb begin
@@ -118,6 +127,10 @@ module control_unit (
         ALU_SrcB_Sel = SRCB_REG;
         Imm_Type_Sel = IMM_I;
         Result_Src_Sel = RESULT_ALU;
+        FPGA_RED1 = 0; 
+        FPGA_RED2 = 0;
+        FPGA_GRN1 = 0;
+        FPGA_GRN2 = 0;
 
         case (OP)
             OP_R_TYPE:
@@ -262,6 +275,10 @@ module control_unit (
                     MEM_W_En = 0; // Don't alter memory
                     Jump_En = 0; // Don't alter control flow
                     Branch_En = 0; // Don't alter control flow
+                    FPGA_RED1 = 0; // Use these instructions to change LEDs to signal the end of the program,
+                    FPGA_RED2 = 0; // I would use only EBREAK but that requires changing the module's inputs
+                    FPGA_GRN1 = 1; 
+                    FPGA_GRN2 = 1; 
                 end
             default: // Illegal/Unsupported instruction so ensure processor state is unchanged. 
                 begin

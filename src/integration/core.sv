@@ -8,8 +8,27 @@
 
 module core (
     input wire CLK,
-    input wire RST
+    input wire FPGA_SW1,
+    output logic FPGA_RED1, FPGA_RED2,
+    output wire FPGA_YEL1, FPGA_YEL2,
+    output logic FPGA_GRN1, FPGA_GRN2,
+    output wire FPGA_BLU1, FPGA_BLU2,
+    output wire FPGA_LED_NEN // Active low
     );
+
+    assign FPGA_LED_NEN = 1'b0; // Permanent enable
+    assign FPGA_BLU1 = 1'b0; // Unused LEDs
+    assign FPGA_BLU2 = 1'b0;
+    assign FPGA_YEL1 = 1'b0; 
+    assign FPGA_YEL2 = 1'b0;
+    assign RST = FPGA_SW1; 
+
+    initial begin // Start with red LEDs on
+        FPGA_RED1 = 1'b1;
+        FPGA_RED2 = 1'b1;
+        FPGA_GRN1 = 1'b0;
+        FPGA_GRN2 = 1'b0;
+    end
 
     // Fetch Signals
     wire PC_En;
@@ -122,7 +141,11 @@ module core (
         .RS2_D(RS2_D),
         .REG_R_Data1_D(REG_R_Data1_D),
         .REG_R_Data2_D(REG_R_Data2_D),
-        .Imm_Ext_D(Imm_Ext_D)
+        .Imm_Ext_D(Imm_Ext_D),
+        .FPGA_RED1(FPGA_RED1),
+        .FPGA_RED2(FPGA_RED2),
+        .FPGA_GRN1(FPGA_GRN1),
+        .FPGA_GRN2(FPGA_GRN2)
     );
 
     idex_register idex_reg (
