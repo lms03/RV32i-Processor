@@ -79,7 +79,7 @@ module unified_memory (
     wire [3:0] W_En;                               // Combined write enables to pass to memory module
     wire [31:0] Data_Out;
     wire [31:0] Instr_Temp; 
-    wire [9:0] RW_Word_Addr; 
+    wire [9:0] RW_Word_Addr;
     logic [1:0] RW_Reg; // Hold the RW address for data selection which must be delayed by one to be after the read (Only need bottom 2 bits)
     logic [2:0] MEM_Control_Reg; // Hold the MEM_Control signal for data selection which must occur after the read (1cycle)
     logic [31:0] Instr_Reg; // Hold the instruction in case of stall

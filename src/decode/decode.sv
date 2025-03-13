@@ -18,7 +18,7 @@ module decode (
     //     Input Signals      //
 
     // Global Control Signals //
-    input wire CLK, 
+    input wire CLK, RST,
     
     //  Fetch stage signals   //
     input wire [31:0] Instr_D,
@@ -49,8 +49,7 @@ module decode (
     output wire [31:0] Imm_Ext_D,
 
     // FPGA LEDs
-    output wire FPGA_RED1, FPGA_RED2,
-    output wire FPGA_GRN1, FPGA_GRN2
+    output wire RED_LED, GRN_LED, YEL_LED
     );
 
     wire [2:0] Imm_Type_Sel; 
@@ -60,6 +59,8 @@ module decode (
     assign RS2_D = Instr_D[24:20];  // Source register 2 (For hazard unit)
     
     control_unit control_unit (
+        .CLK(CLK), 
+        .RST(RST),
         .OP(Instr_D[6:0]),
         .Func3(Instr_D[14:12]),
         .Func7(Instr_D[31:25]),
@@ -75,10 +76,9 @@ module decode (
         .ALU_SrcB_Sel(ALU_SrcB_Sel_D),
         .Result_Src_Sel(Result_Src_Sel_D),
 
-        .FPGA_RED1(FPGA_RED1),
-        .FPGA_RED2(FPGA_RED2),
-        .FPGA_GRN1(FPGA_GRN1),
-        .FPGA_GRN2(FPGA_GRN2)
+        .red(RED_LED),
+        .green(GRN_LED),
+        .yellow(YEL_LED)
     );
 
     register_file reg_file (
@@ -100,6 +100,7 @@ module decode (
 endmodule
 
 module control_unit (
+    input wire CLK, RST,
     input wire [6:0] OP,
     input wire [2:0] Func3,
     input wire [6:0] Func7,
@@ -110,9 +111,31 @@ module control_unit (
     output logic Branch_Src_Sel, // Selects the input of the branch target calclulation (PC or Immediate) to allow JALR.
     output logic ALU_SrcA_Sel, ALU_SrcB_Sel, // Selects the ALU inputs between registers and PC/Immediate.
     output logic [1:0] Result_Src_Sel, // Selects the source of the result, 11 is unused.
-    output logic FPGA_RED1, FPGA_RED2,
-    output logic FPGA_GRN1, FPGA_GRN2
+    output logic red, green, yellow
     );
+
+    always_ff @ (posedge CLK) begin
+        if (RST) begin // Red when reset
+            red <= 1'b1;
+            green <= 1'b0;
+            yellow <= 1'b0;
+        end
+        else if (OP == OP_R_TYPE) begin // Yellow when busy, I don't want to overwrite the green when set so use R type rather than else
+            red <= 1'b0;
+            green <= 1'b0;
+            yellow <= 1'b1;
+        end
+        else if (OP == OP_ECALL_EBREAK) begin // Green when done, I would use only EBREAK but that requires changing the module's inputs
+            red <= 1'b0;
+            green <= 1'b1;
+            yellow <= 1'b0;
+        end
+        else begin
+            red <= red;
+            green <= green;
+            yellow <= yellow;
+        end
+    end
 
     always_comb begin
         // Default values
@@ -127,10 +150,6 @@ module control_unit (
         ALU_SrcB_Sel = SRCB_REG;
         Imm_Type_Sel = IMM_I;
         Result_Src_Sel = RESULT_ALU;
-        FPGA_RED1 = 0; 
-        FPGA_RED2 = 0;
-        FPGA_GRN1 = 0;
-        FPGA_GRN2 = 0;
 
         case (OP)
             OP_R_TYPE:
@@ -275,10 +294,6 @@ module control_unit (
                     MEM_W_En = 0; // Don't alter memory
                     Jump_En = 0; // Don't alter control flow
                     Branch_En = 0; // Don't alter control flow
-                    FPGA_RED1 = 0; // Use these instructions to change LEDs to signal the end of the program,
-                    FPGA_RED2 = 0; // I would use only EBREAK but that requires changing the module's inputs
-                    FPGA_GRN1 = 1; 
-                    FPGA_GRN2 = 1; 
                 end
             default: // Illegal/Unsupported instruction so ensure processor state is unchanged. 
                 begin

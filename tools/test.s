@@ -131,17 +131,23 @@ loop_3		lwu	x8, [x6]
 		srli	x9, x8, 16
 		andi	x9, x9, 0xFF
 		bne	x7, x9, broken3
-		beq	x7, x9, stop
+		beq	x7, x9, end
 		; Removed MUL/DIV/CSR
 
-stop		ebreak
-		j	stop
+end
+        li      x10, 100000000  ; 2-second delay at 50 MHz
+
+delay_loop
+        addi    x10, x10, -1
+        bnez    x10, delay_loop
 
 		addi	x6, x6, 4
 		subi	x6, x6, -4
 		addi	x7, x7, -1
 		subi	x7, x7, +1
 
+stop        ebreak ; Move away so branch prediction doesn't reset LEDs 
+        j       stop
 
 string_1	defb	0x00, 0x11, 0x22, 0x33
 		defb	0x44, 0x55, 0x66, 0x77

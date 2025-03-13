@@ -7,28 +7,37 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 module core (
-    input wire CLK,
-    input wire FPGA_SW1,
-    output logic FPGA_RED1, FPGA_RED2,
+    input wire CLK_50MHZ_R,
+    input wire FPGA_SW1, 
+    output wire FPGA_RED1, FPGA_RED2,
     output wire FPGA_YEL1, FPGA_YEL2,
-    output logic FPGA_GRN1, FPGA_GRN2,
+    output wire FPGA_GRN1, FPGA_GRN2,
     output wire FPGA_BLU1, FPGA_BLU2,
     output wire FPGA_LED_NEN // Active low
     );
 
-    assign FPGA_LED_NEN = 1'b0; // Permanent enable
-    assign FPGA_BLU1 = 1'b0; // Unused LEDs
-    assign FPGA_BLU2 = 1'b0;
-    assign FPGA_YEL1 = 1'b0; 
-    assign FPGA_YEL2 = 1'b0;
-    assign RST = FPGA_SW1; 
+    wire CLK, RST;  
+    wire RED_LED, GRN_LED, YEL_LED;
+    wire locked;
 
-    initial begin // Start with red LEDs on
-        FPGA_RED1 = 1'b1;
-        FPGA_RED2 = 1'b1;
-        FPGA_GRN1 = 1'b0;
-        FPGA_GRN2 = 1'b0;
-    end
+    assign RST = !locked || !FPGA_SW1;
+    
+    // assign locked = 1'b1; // Always locked
+    // assign CLK = CLK_50MHZ_R; // 50 MHz clock
+
+    clk_wiz_0 clk_mult(.clk_out1(CLK),                     /* 40 MHz system clock */
+                    .clk_in1(CLK_50MHZ_R),              /* 50 MHz clk in       */
+                    .locked(locked));           /* inverted and used for reset */
+
+    assign FPGA_LED_NEN = 1'b0; // Permanent enable
+    assign FPGA_BLU1 = 1'b0; // LEDs permanantly off
+    assign FPGA_BLU2 = 1'b0;
+    assign FPGA_YEL1 = YEL_LED; 
+    assign FPGA_YEL2 = YEL_LED;
+    assign FPGA_RED1 = RED_LED;
+    assign FPGA_RED2 = RED_LED;
+    assign FPGA_GRN1 = GRN_LED;
+    assign FPGA_GRN2 = GRN_LED;
 
     // Fetch Signals
     wire PC_En;
@@ -121,6 +130,7 @@ module core (
 
     decode decode (
         .CLK(CLK),
+        .RST(RST),
         .Instr_D(Instr_D),
         .REG_W_En_W(REG_W_En_W),
         .Result_W(REG_W_Data_W),
@@ -142,10 +152,9 @@ module core (
         .REG_R_Data1_D(REG_R_Data1_D),
         .REG_R_Data2_D(REG_R_Data2_D),
         .Imm_Ext_D(Imm_Ext_D),
-        .FPGA_RED1(FPGA_RED1),
-        .FPGA_RED2(FPGA_RED2),
-        .FPGA_GRN1(FPGA_GRN1),
-        .FPGA_GRN2(FPGA_GRN2)
+        .RED_LED(RED_LED),
+        .GRN_LED(GRN_LED),
+        .YEL_LED(YEL_LED)
     );
 
     idex_register idex_reg (
