@@ -8,11 +8,22 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 module ifid_register (
+    /*========================*/
+    //     Input Signals      //
+
     input wire CLK, RST, Flush_D, Stall_En,
     input wire [31:0] PC_F, PC_Plus_4_F,
     input wire Predict_Taken_F, Valid_F,
+
+    /*========================*/
+    /*||||||||||||||||||||||||*/
+    /*========================*/
+    //     Output Signals     //
+
     output logic [31:0] PC_D, PC_Plus_4_D,
     output logic Predict_Taken_D, Valid_D
+    
+    /*========================*/
     );
 
     always_ff @ (posedge CLK) begin // Synchronous flush

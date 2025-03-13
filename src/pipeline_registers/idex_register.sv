@@ -4,16 +4,19 @@
 // Description: Holds the instruction, control signals and program counters to be passed to the execute stage.
 //              Uses synchronous reset and flush.     
 // Author: Luke Shepherd                                                     
-// Date Modified: February 2025                                                                                                                                                                                                                                                           
+// Date Modified: March 2025                                                                                                                                                                                                                                                           
 //////////////////////////////////////////////////////////////////////////////////
 
 import definitions::*;
 
 module idex_register (
-    // Global control signals
+    /*========================*/
+    //     Input Signals      //
+
+    // Global control signals //
     input wire CLK, RST, Flush_E,
 
-    // Control unit signals
+    //  Control unit signals  //
     input wire REG_W_En_D, MEM_W_En_D, Jump_En_D, Branch_En_D,
     input wire [2:0] MEM_Control_D,
     input wire [3:0] ALU_Control_D,
@@ -21,20 +24,23 @@ module idex_register (
     input wire ALU_SrcA_Sel_D, ALU_SrcB_Sel_D,
     input wire [1:0] Result_Src_Sel_D,
     
-    // Register data
+    //      Register data     //
     input wire [4:0] RD_D, RS1_D, RS2_D,
     input wire [31:0] REG_R_Data1_D, REG_R_Data2_D,
 
-    // Extended Immediate
+    //   Extended Immediate   //
     input wire [31:0] Imm_Ext_D,
 
-    // PC
+    //           PC           //
     input wire [31:0] PC_D, PC_Plus_4_D,
     input wire Predict_Taken_D, Valid_D,
 
-    // -----------------------------------------------------------
+    /*========================*/
+    /*||||||||||||||||||||||||*/
+    /*========================*/
+    //     Output Signals     //
     
-    // Control unit signals
+    //  Control unit signals  //
     output logic REG_W_En_E, MEM_W_En_E, Jump_En_E, Branch_En_E,
     output logic [2:0] MEM_Control_E,
     output logic [3:0] ALU_Control_E,
@@ -42,16 +48,18 @@ module idex_register (
     output logic ALU_SrcA_Sel_E, ALU_SrcB_Sel_E,
     output logic [1:0] Result_Src_Sel_E,
 
-    // Register data
+    //      Register data     //
     output logic [4:0] RD_E, RS1_E, RS2_E,
     output logic [31:0] REG_R_Data1_E, REG_R_Data2_E,
 
-    // Extended Immediate
+    //   Extended Immediate   //
     output logic [31:0] Imm_Ext_E,
 
-    // PC
+    //           PC           //
     output logic [31:0] PC_E, PC_Plus_4_E,
     output logic Predict_Taken_E, Valid_E
+
+    /*========================*/
     );
 
     always_ff @ (posedge CLK) begin // Synchronous flush 

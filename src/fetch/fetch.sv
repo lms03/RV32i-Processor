@@ -5,9 +5,6 @@
 //              Program Counter: 
 //                  Points to the next instruction to be executed.
 //                  Uses synchronous reset.        
-//              Instruction Memory:
-//                  Holds the program for the processor to execute 
-//                  and outputs the instruction pointed to by the PC.
 //              Branch Predictor:
 //                  Implements a 2-bit saturating counter to predict
 //                  whether a branch will be taken or not.
@@ -21,11 +18,28 @@
 import definitions::*;
 
 module fetch (
-    input wire CLK, RST, PC_En,
+    /*========================*/
+    //     Input Signals      //
+
+    // Global Control Signals //
+    input wire CLK, RST,
+    
+    // Hazard Control Signals //
+    input wire PC_En,
+
+    //     Branch Signals     //
     input wire Predict_Taken_E, Branch_Taken_E, Valid_E,
     input wire [31:0] PC_Target_E, PC_Plus_4_E, PC_E,
+
+    /*========================*/
+    /*||||||||||||||||||||||||*/
+    /*========================*/
+    //     Output Signals     //
+
     output wire [31:0] PC_F, PC_Plus_4_F, // Instr_F goes directly to decode since it is read into a register.
     output wire Predict_Taken_F, Valid_F
+    
+    /*========================*/
     );
 
     wire [31:0] PC_In, PC_Next, PC_Predict, PC_Prediction;

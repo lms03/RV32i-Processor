@@ -9,25 +9,33 @@
 import definitions::*;
 
 module hazard_control_unit (
-    // Load RAW Hazard 
+    /*========================*/
+    //     Input Signals      //
+
+    //     Load RAW Hazard    //
     input wire [4:0] RS1_D, RS2_D, RD_E,
     input wire [1:0] Result_Src_Sel_E, 
 
-    // Regular RAW Hazard 
+    //   Regular RAW Hazard   //
     input wire [4:0] RS1_E, RS2_E,       
     input wire [4:0] RD_M,
     input wire REG_W_En_M, 
     input wire [4:0] RD_W,
     input wire REG_W_En_W,
 
-    // Branch Misprediction 
+    //  Branch Misprediction  //
     input wire Branch_Taken_E, Predict_Taken_E,
     
-    // -----------------------------------------------------------
+    /*========================*/
+    /*||||||||||||||||||||||||*/
+    /*========================*/
+    //     Output Signals     //
 
-    // Control Signals 
+    //    Control Signals     //
     output logic [1:0] FWD_SrcA, FWD_SrcB,
     output logic Stall_En, Flush_D, Flush_E, PC_En
+    
+    /*========================*/
     );
 
     // Forwarding SrcA for RAW hazards

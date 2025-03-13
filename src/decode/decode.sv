@@ -14,34 +14,49 @@
 import definitions::*;
 
 module decode (
+    /*========================*/
+    //     Input Signals      //
+
+    // Global Control Signals //
     input wire CLK, 
+    
+    //  Fetch stage signals   //
     input wire [31:0] Instr_D,
 
-    // Signals from writeback
-    input wire REG_W_En_W, 
+    //   Writeback Signals    //
+    input wire REG_W_En_W,    
     input wire [31:0] Result_W,
     input wire [4:0] RD_W,
 
-    // -----------------------------------------------------------
-    
-    // Control unit signals
+    /*========================*/
+    /*||||||||||||||||||||||||*/
+    /*========================*/
+    //     Output Signals     //
+
+    //  Control unit signals  //
     output wire REG_W_En_D, MEM_W_En_D, Jump_En_D, Branch_En_D,
     output wire [2:0] MEM_Control_D,
     output wire [3:0] ALU_Control_D,
     output wire Branch_Src_Sel_D,
     output wire ALU_SrcA_Sel_D, ALU_SrcB_Sel_D,
     output wire [1:0] Result_Src_Sel_D,
-    
-    // Register data
+
+    //      Register data     //
     output wire [4:0] RD_D, RS1_D, RS2_D,
     output wire [31:0] REG_R_Data1_D, REG_R_Data2_D,
-
-    // Extended immediate
+    
+    //   Extended immediate   //
     output wire [31:0] Imm_Ext_D
+
+    /*========================*/
     );
 
     wire [2:0] Imm_Type_Sel; 
 
+    assign RD_D  = Instr_D[11:7];   // Destination register
+    assign RS1_D = Instr_D[19:15];  // Source register 1 (For hazard unit)
+    assign RS2_D = Instr_D[24:20];  // Source register 2 (For hazard unit)
+    
     control_unit control_unit (
         .OP(Instr_D[6:0]),
         .Func3(Instr_D[14:12]),
@@ -75,11 +90,6 @@ module decode (
         .Imm_Type_Sel(Imm_Type_Sel),
         .Imm_Ext(Imm_Ext_D)
     );
-
-    assign RD_D  = Instr_D[11:7];   // Destination register
-    assign RS1_D = Instr_D[19:15];  // Source register 1 (For hazard unit)
-    assign RS2_D = Instr_D[24:20];  // Source register 2 (For hazard unit)
-
 endmodule
 
 module control_unit (

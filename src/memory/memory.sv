@@ -14,6 +14,10 @@
 import definitions::*;
 
 module memory (
+    /*========================*/
+    //     Input Signals      //
+
+    // Global Control Signals //
     input wire CLK, RST,
 
     // Control unit signals
@@ -24,21 +28,26 @@ module memory (
     input wire [31:0] SrcB_Reg_M,
 
     // ALU output
-    input wire [31:0] ALU_Out_M,
+    input wire [11:0] ALU_Out_M,
 
     // PC from fetch stage
-    input wire [31:0] PC_F,
+    input wire [11:2] PC_F,
 
     // Hazard control signals so that instruction fetch can be stalled or flushed
     input wire Flush_D, Stall_En,
 
-    // -----------------------------------------------------------
+    /*========================*/
+    /*||||||||||||||||||||||||*/
+    /*========================*/
+    //     Output Signals     //
     
     // Data reads
     output wire [31:0] Data_Out_Ext_M,
 
     // Instruction fetches
     output logic [31:0] Instr_D
+
+    /*========================*/
     );
 
     unified_memory unified_memory (
@@ -59,8 +68,9 @@ endmodule
 module unified_memory (
     input wire CLK, RST, Flush_D, Stall_En, MEM_W_En,
     input wire [2:0] MEM_Control,
-    input wire [31:0] RW_Addr, W_Data,
-    input wire [31:0] PC_Addr,
+    input wire [11:0] RW_Addr, 
+    input wire [31:0] W_Data,
+    input wire [11:2] PC_Addr,
     output wire [31:0] Instr,
     output logic [31:0] R_Data
     );
@@ -69,7 +79,7 @@ module unified_memory (
     wire [3:0] W_En;                               // Combined write enables to pass to memory module
     wire [31:0] Data_Out;
     wire [31:0] Instr_Temp; 
-    wire [9:0] RW_Word_Addr, PC_Word_Addr;
+    wire [9:0] RW_Word_Addr; 
     logic [1:0] RW_Reg; // Hold the RW address for data selection which must be delayed by one to be after the read (Only need bottom 2 bits)
     logic [2:0] MEM_Control_Reg; // Hold the MEM_Control signal for data selection which must occur after the read (1cycle)
     logic [31:0] Instr_Reg; // Hold the instruction in case of stall
@@ -108,7 +118,6 @@ module unified_memory (
     assign Instr = (Stall_Reg || Flush_Reg || RST_Reg) ? Instr_Reg : Instr_Temp;
 
     assign RW_Word_Addr[9:0] = RW_Addr >> 2;
-    assign PC_Word_Addr[9:0] = PC_Addr >> 2;
 
     bytewrite_tdp_ram_rf memory (
         .clkA(CLK),                     // Use the same clock for both ports but keep the template untouched.
@@ -121,7 +130,7 @@ module unified_memory (
         .clkB(CLK),
         .enaB(1'b1),
         .weB(4'b0000),                  // Don't write with this port since only dual read is needed, theres probably a better way to do it.
-        .addrB(PC_Word_Addr),      // PC for fetch address 
+        .addrB(PC_Addr),                // PC for fetch address 
         .dinB(W_Data),                  // Not really used but kept for the template structure, won't be enabled anyway
         .doutB(Instr_Temp)              // Instruction fetch
     );

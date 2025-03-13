@@ -13,38 +13,47 @@
 import definitions::*;
 
 module execute (
-    // Control unit signals
+    /*========================*/
+    //     Input Signals      //
+
+    //  Control unit signals  //
     input wire Jump_En_E, Branch_En_E,
     input wire [3:0] ALU_Control_E,
     input wire Branch_Src_Sel_E,
     input wire ALU_SrcA_Sel_E, ALU_SrcB_Sel_E,
 
-    // Register data
+    //      Register data     //
     input wire [31:0] REG_R_Data1_E, REG_R_Data2_E,
 
-    // Extended Immediate
+    //   Extended Immediate   //
     input wire [31:0] Imm_Ext_E,
 
-    // PC
+    //          PC            //
     input wire [31:0] PC_E,
 
-    // Forwarding
+    //       Forwarding       //
     input wire [1:0] FWD_SrcA, FWD_SrcB,
     input wire [31:0] ALU_Out_M, Result_W,
 
-    // -----------------------------------------------------------
+    /*========================*/
+    /*||||||||||||||||||||||||*/
+    /*========================*/
+    //     Output Signals     //
     
-    // Outputs
     output wire Branch_Taken_E,
     output wire [31:0] ALU_Out_E,
     output wire [31:0] PC_Target_E,
-    output wire [31:0] SrcB_Reg_E     
+    output wire [31:0] SrcB_Reg_E 
+
+    /*========================*/    
     );
 
     wire [31:0] SrcA, SrcB;
     wire [31:0] SrcA_Reg;
     wire Branch_Out;
     wire [31:0] Branch_Src;
+
+    assign Branch_Taken_E = Jump_En_E | (Branch_En_E & Branch_Out);
 
     arithmetic_logic_unit alu (
         .ALU_Control(ALU_Control_E),
@@ -96,8 +105,6 @@ module execute (
         .B(Imm_Ext_E),
         .OUT(PC_Target_E)
     );
-
-    assign Branch_Taken_E = Jump_En_E | (Branch_En_E & Branch_Out);
 endmodule
 
 module arithmetic_logic_unit (

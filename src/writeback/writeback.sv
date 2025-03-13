@@ -3,27 +3,35 @@
 // File: Writeback                                                   
 // Description: Holds the Writeback stage multiplexer.
 // Author: Luke Shepherd
-// Date Modified: February 2025                                                                                                                                                                                                                                                       
+// Date Modified: March 2025                                                                                                                                                                                                                                                       
 //////////////////////////////////////////////////////////////////////////////////
 
 import definitions::*;
 
 module writeback (
-    // Control unit signal
+    /*========================*/
+    //     Input Signals      //
+
+    //   Control unit signal  //
     input wire [1:0] Result_Src_Sel_W,
 
-    // Data memory
+    //      Data memory       //
     input wire [31:0] Data_Out_Ext_W,
 
-    // ALU output
+    //       ALU output       //
     input wire [31:0] ALU_Out_W,
 
-    // PC
+    //          PC            //
     input wire [31:0] PC_Plus_4_W,
 
-    // -----------------------------------------------------------
+    /*========================*/
+    /*||||||||||||||||||||||||*/
+    /*========================*/
+    //     Output Signals     //
 
     output logic [31:0] Result_W
+
+    /*========================*/
     );
 
     always_comb begin

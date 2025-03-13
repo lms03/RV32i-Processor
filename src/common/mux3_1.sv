@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////////                                                           
 // Third Year Project: RISC-V RV32i Pipelined Processor
 // File: 3 to 1 Multiplexer                                                   
-// Description: Generic 3 to 1 multiplexer used to select between two inputs.
+// Description: Generic 3 to 1 multiplexer used to select between three inputs.
 // Author: Luke Shepherd                                                     
 // Date Created: March 2025                                                                                                                                                                                                                                                       
 //////////////////////////////////////////////////////////////////////////////////
