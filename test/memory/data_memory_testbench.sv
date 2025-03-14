@@ -3,7 +3,7 @@
 // File: Data Memory Testbench                                                   
 // Description: This is a testbench to ensure that the data memory stores and loads data correctly.
 // Author: Luke Shepherd                                                     
-// Date Modified: February 2025                                                                                                                                                                                                                                                       
+// Date Modified: March 2025                                                                                                                                                                                                                                                       
 //////////////////////////////////////////////////////////////////////////////////
 
 import definitions::*;
@@ -11,21 +11,21 @@ import definitions::*;
 module data_memory_testbench;
     logic CLK, MEM_W_En; 
     logic [2:0] MEM_Control;
-    logic [31:0] RW_Addr, W_Data;
+    logic [11:0] RW_Addr;
+    logic [31:0] W_Data;
     logic [31:0] Data_Out;
-
-    unified dmem (
+    
+    unified_memory dmem (
         .CLK(CLK),
-        .RST(0),
-        .Flush_D(0),
-        .Stall_En(0),
+        .RST(1'b0),
+        .Flush_D(1'b0),
+        .Stall_En(1'b0),
         .MEM_W_En(MEM_W_En),
         .MEM_Control(MEM_Control),
         .RW_Addr(RW_Addr),
-        .W_Data(W_Data),
+        .SrcB_Reg_M(W_Data),
         .R_Data(Data_Out),
-        .PC_Addr(0),
-        .Instr(0),
+        .PC_Addr(10'b0)
     );
 
     initial CLK <= 1; // Initialize the clock
@@ -42,8 +42,9 @@ module data_memory_testbench;
         W_Data <= 32'h1111_11FF; 
         @(posedge CLK); // Clock to set up inputs
         @(posedge CLK); // Clock again to store
-        assert (dmem.memory0.memory[0] == 8'hFF) else $error("Error: Unit did not store byte correctly, expected 0xFF, got 0x%h", $sampled(dmem.memory0.memory[0]));
+        assert (dmem.memory.ram_block[0][7:0] == 8'hFF) else $error("Error: Unit did not store byte correctly, expected 0xFF, got 0x%h", $sampled(dmem.memory.ram_block[0][7:0]));
 
+        
         // Test Store Halfword
         MEM_W_En <= 1;
         MEM_Control <= MEM_HALFWORD;
@@ -51,7 +52,7 @@ module data_memory_testbench;
         W_Data <= 32'hF11F_F00F;
         @(posedge CLK);
         @(posedge CLK); 
-        assert (dmem.memory2.memory[0] == 8'h0F && dmem.memory3.memory[0] == 8'hF0) else $error("Error: Unit did not store halfword correctly, expected 0xF00F, got 0x%h%h", $sampled(dmem.memory3.memory[0]), $sampled(dmem.memory2.memory[0]));
+        assert (dmem.memory.ram_block[0][31:16] == 16'hF00F) else $error("Error: Unit did not store halfword correctly, expected 0xF00F, got 0x%h", $sampled(dmem.memory.ram_block[0][31:16]));
 
         // Test Store Word
         MEM_W_En <= 1;
@@ -60,7 +61,7 @@ module data_memory_testbench;
         W_Data <= 32'hFBBF_FAAF; 
         @(posedge CLK);
         @(posedge CLK); 
-        assert (dmem.memory0.memory[1] == 8'hAF && dmem.memory1.memory[1] == 8'hFA && dmem.memory2.memory[1] == 8'hBF && dmem.memory3.memory[1] == 8'hFB) else $error("Error: Unit did not store word correctly, expected 0xFBBFFAAF, got 0x%h%h%h%h", $sampled(dmem.memory3.memory[1]), $sampled(dmem.memory2.memory[1]), $sampled(dmem.memory1.memory[1]), $sampled(dmem.memory0.memory[1]));
+        assert (dmem.memory.ram_block[1] == 32'hFBBF_FAAF) else $error("Error: Unit did not store word correctly, expected 0xFBBFFAAF, got 0x%h", $sampled(dmem.memory.ram_block[1]));
 
         // Test Load Byte
         MEM_W_En <= 0;
@@ -102,6 +103,7 @@ module data_memory_testbench;
         @(posedge CLK);
         assert (Data_Out == 32'hFBBF_FAAF) else $error("Error: Unit did not load word correctly, expected 0xFBBFFAAF, got 0x%h", $sampled(Data_Out));
         
+
         operate(); // Test storing then reading from every address
         $stop; 
     end

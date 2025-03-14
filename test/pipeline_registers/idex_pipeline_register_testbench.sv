@@ -3,7 +3,7 @@
 // Module: Decode to Execute Pipeline Register Testbench                                                  
 // Description: Tests that the pipeline register responds to control signals correctly and passes data through.
 // Author: Luke Shepherd                                                     
-// Date Modified: February 2025                                                                                                                                                                                                                                            
+// Date Modified: March 2025                                                                                                                                                                                                                                            
 //////////////////////////////////////////////////////////////////////////////////
 
 import definitions::*;
@@ -24,6 +24,7 @@ module idex_pipeline_register_testbench ();
     logic [31:0] Imm_Ext_D;
     logic [31:0] PC_D, PC_Plus_4_D;
     logic Predict_Taken_D;
+    logic Valid_D;
 
     // Output signals
     logic REG_W_En_E, MEM_W_En_E, Jump_En_E, Branch_En_E;
@@ -37,10 +38,12 @@ module idex_pipeline_register_testbench ();
     logic [31:0] Imm_Ext_E;
     logic [31:0] PC_E, PC_Plus_4_E;
     logic Predict_Taken_E;
+    logic Valid_E;
 
     idex_register idex (
         // Global control signals
         .CLK(CLK),
+        .RST(RST),
         .Flush_E(Flush_E),
 
         // Input signals
@@ -63,6 +66,7 @@ module idex_pipeline_register_testbench ();
         .PC_D(PC_D),
         .PC_Plus_4_D(PC_Plus_4_D),
         .Predict_Taken_D(Predict_Taken_D),
+        .Valid_D(Valid_D),
 
         // Output signals
         .REG_W_En_E(REG_W_En_E),
@@ -83,7 +87,8 @@ module idex_pipeline_register_testbench ();
         .Imm_Ext_E(Imm_Ext_E),
         .PC_E(PC_E),
         .PC_Plus_4_E(PC_Plus_4_E),
-        .Predict_Taken_E(Predict_Taken_E)
+        .Predict_Taken_E(Predict_Taken_E),
+        .Valid_E(Valid_E)
     );
 
     initial CLK <= 1; // Initialize the clock
@@ -134,6 +139,7 @@ module idex_pipeline_register_testbench ();
             PC_D <= $urandom;
             PC_Plus_4_D <= $urandom;
             Predict_Taken_D <= $urandom;
+            Valid_D <= $urandom;
             @(posedge CLK);
         end
     end
@@ -141,17 +147,17 @@ module idex_pipeline_register_testbench ();
 
     // Assert register resets enable signals
     assertRegisterResetEnables: assert property (@(posedge CLK) 
-        (RST |-> ##1 (REG_W_En_E == 1'b0 && MEM_W_En_E == 1'b0 && Jump_En_E == 1'b0 && Branch_En_E == 1'b0)))
-        else $error("Error: Register did not reset correctly, expected enable signals to be zero but got REG_W_En_E %h, MEM_W_En_E %h, Jump_En_E %h, Branch_En_E %h", 
-            $sampled(REG_W_En_E), $sampled(MEM_W_En_E), $sampled(Jump_En_E), $sampled(Branch_En_E));
+        (RST |-> ##1 (REG_W_En_E == 1'b0 && MEM_W_En_E == 1'b0 && Jump_En_E == 1'b0 && Branch_En_E == 1'b0 && Predict_Taken_E == 1'b0 && Valid_E == 1'b0)))
+        else $error("Error: Register did not reset correctly, expected enable signals to be zero but got REG_W_En_E %h, MEM_W_En_E %h, Jump_En_E %h, Branch_En_E %h, Predict_Taken_E %h, Valid_E %h", 
+            $sampled(REG_W_En_E), $sampled(MEM_W_En_E), $sampled(Jump_En_E), $sampled(Branch_En_E), $sampled(Predict_Taken_E), $sampled(Valid_E));
 
     // --------------------------------------------------------
 
     // Assert register inserts a NOP when flush is asserted
     assertRegisterFlushEnables: assert property (@(posedge CLK) 
-        ((Flush_E && !RST) |-> ##1 (REG_W_En_E == 1'b0 && MEM_W_En_E == 1'b0 && Jump_En_E == 1'b0 && Branch_En_E == 1'b0)))
-        else $error("Error: Register did not flush correctly, expected enable signals to be zero but got REG_W_En_E %h, MEM_W_En_E %h, Jump_En_E %h, Branch_En_E %h", 
-            $sampled(REG_W_En_E), $sampled(MEM_W_En_E), $sampled(Jump_En_E), $sampled(Branch_En_E));
+        ((Flush_E && !RST) |-> ##1 (REG_W_En_E == 1'b0 && MEM_W_En_E == 1'b0 && Jump_En_E == 1'b0 && Branch_En_E == 1'b0 && Predict_Taken_E == 1'b0 && Valid_E == 1'b0)))
+        else $error("Error: Register did not flush correctly, expected enable signals to be zero but got REG_W_En_E %h, MEM_W_En_E %h, Jump_En_E %h, Branch_En_E %h, Predict_Taken_E %h, Valid_E %h", 
+            $sampled(REG_W_En_E), $sampled(MEM_W_En_E), $sampled(Jump_En_E), $sampled(Branch_En_E), $sampled(Predict_Taken_E), $sampled(Valid_E));
 
     assertRegisterFlushPC: assert property (@(posedge CLK) 
         ((Flush_E && !RST) |-> ##1 (PC_E == 32'h2A2A_2A2A && PC_Plus_4_E == 32'h2A2A_2A2A)))
@@ -182,8 +188,8 @@ module idex_pipeline_register_testbench ();
             $sampled($past(RD_D)), $sampled($past(RS1_D)), $sampled($past(RS2_D)), $sampled($past(REG_R_Data1_D)), $sampled($past(REG_R_Data2_D)), $sampled(RD_E), $sampled(RS1_E), $sampled(RS2_E), $sampled(REG_R_Data1_E), $sampled(REG_R_Data2_E));
 
     assertRegisterPassesOther: assert property (@(posedge CLK)
-        ((!Flush_E && !RST) |-> ##1 (Imm_Ext_E == $past(Imm_Ext_D) && PC_E == $past(PC_D) && PC_Plus_4_E == $past(PC_Plus_4_D) && Predict_Taken_E == $past(Predict_Taken_D))))
-        else $error("Error: Register did not pass data correctly, expected signals to be Imm_Ext_E %h, PC_E %h, PC_Plus_4_E %h Predict_Taken %h but got Imm_Ext_E %h, PC_E %h, PC_Plus_4_E %h Predict_Taken %h", 
-            $sampled($past(Imm_Ext_D)), $sampled($past(PC_D)), $sampled($past(PC_Plus_4_D)), $sampled($past(Predict_Taken_D)), $sampled(Imm_Ext_E), $sampled(PC_E), $sampled(PC_Plus_4_E), $sampled(Predict_Taken_E));
+        ((!Flush_E && !RST) |-> ##1 (Imm_Ext_E == $past(Imm_Ext_D) && PC_E == $past(PC_D) && PC_Plus_4_E == $past(PC_Plus_4_D) && Predict_Taken_E == $past(Predict_Taken_D) && Valid_E == $past(Valid_D))))
+        else $error("Error: Register did not pass data correctly, expected signals to be Imm_Ext_E %h, PC_E %h, PC_Plus_4_E %h Predict_Taken %h Valid_D %h but got Imm_Ext_E %h, PC_E %h, PC_Plus_4_E %h Predict_Taken %h Valid_D %h", 
+            $sampled($past(Imm_Ext_D)), $sampled($past(PC_D)), $sampled($past(PC_Plus_4_D)), $sampled($past(Predict_Taken_D)), $sampled($past(Valid_D)), $sampled(Imm_Ext_E), $sampled(PC_E), $sampled(PC_Plus_4_E), $sampled(Predict_Taken_E), $sampled(Valid_E));
 
 endmodule

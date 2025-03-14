@@ -10,40 +10,48 @@
 import definitions::*;
 
 module exmem_register (
-    // Global control signals
+    /*========================*/
+    //     Input Signals      //
+
+    // Global control signals //
     input wire CLK, RST,
 
-    // Control unit signals  
+    //  Control unit signals  //
     input wire REG_W_En_E, MEM_W_En_E, 
     input wire [2:0] MEM_Control_E,
     input wire [1:0] Result_Src_Sel_E,
 
-    // Register data
+    //      Register data     //
     input wire [4:0] RD_E,
     input wire [31:0] SrcB_Reg_E,
 
-    // ALU output
+    //       ALU output       //
     input wire [31:0] ALU_Out_E,
 
-    // PC
+    //           PC           //
     input wire [31:0] PC_Plus_4_E,
 
-    // -----------------------------------------------------------
+    /*========================*/
+    /*||||||||||||||||||||||||*/
+    /*========================*/
+    //     Output Signals     //
     
-    // Control unit signals
+    //  Control unit signals  //
     output logic REG_W_En_M, MEM_W_En_M,
     output logic [2:0] MEM_Control_M,
     output logic [1:0] Result_Src_Sel_M,
 
-    // Register data
+    //      Register data     //
     output logic [4:0] RD_M,
     output logic [31:0] SrcB_Reg_M,
 
-    // ALU output
+    //        ALU output      //
     output logic [31:0] ALU_Out_M,
 
-    // PC
+    //           PC           //
     output logic [31:0] PC_Plus_4_M
+
+    /*========================*/
     );
 
     always_ff @ (posedge CLK) begin // Synchronous reset 

@@ -86,7 +86,7 @@ module decode (
     );
 
     immediate_extender imm_extender (
-        .Instr(Instr_D[31:7]),
+        .Instr(Instr_D),
         .Imm_Type_Sel(Imm_Type_Sel),
         .Imm_Ext(Imm_Ext_D)
     );
@@ -295,7 +295,7 @@ module register_file (
 endmodule
 
 module immediate_extender ( 
-    input wire [31:7] Instr, // Uses entire immediate range as input to cover all immediate variants
+    input wire [31:0] Instr, // Uses entire immediate range as input to cover all immediate variants
     input wire [2:0] Imm_Type_Sel, // Output from decoder, chooses how to extend
     output logic [31:0] Imm_Ext  // The output 32-bit immediate for later use
     );

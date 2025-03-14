@@ -3,7 +3,7 @@
 // File: Program Counter Testbench                                                   
 // Description: This is a testbench to ensure that the program counter resets, stalls and updates correctly.
 // Author: Luke Shepherd                                                     
-// Date Modified: February 2025                                                                                                                                                                                                                                                 
+// Date Modified: March 2025                                                                                                                                                                                                                                                 
 //////////////////////////////////////////////////////////////////////////////////
 
 import definitions::*;
@@ -75,8 +75,8 @@ module program_counter_testbench ();
         else $error("Error: PC did not reset correctly, expected 0 but got %h", $sampled(PC_Out));
 
     // Ensure PC updates when the input to the module is updated
-    assertPCIncrement: assert property (@(posedge CLK) (RST == 0 && PC_En == 1 |-> ##1 PC_Out == $past(PC_In)))
-        else $error("Error: PC did not update correctly, expected %h but got %h", $past(PC_In), $sampled(PC_Out));
+    assertPCIncrement: assert property (@(posedge CLK) (RST == 0 && PC_En == 1 |-> ##1 PC_Out[31:2] == $past(PC_In[31:2])))
+        else $error("Error: PC did not update correctly, expected %h but got %h", $past(PC_In[31:2]), $sampled(PC_Out[31:2]));
 
     // Ensure PC stalls and retains the same output
     assertPCStall: assert property (@(posedge CLK) (RST == 0 && PC_En == 0 |-> ##1 PC_Out == $past(PC_Out)))

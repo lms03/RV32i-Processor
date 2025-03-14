@@ -28,7 +28,7 @@ module memwb_pipeline_register_testbench ();
     logic [31:0] ALU_Out_W;
     logic [31:0] PC_Plus_4_W;   
 
-    exmem_register exmem (
+    memwb_register memwb (
         // Global control signals
         .CLK(CLK),
         .RST(RST),
@@ -37,7 +37,7 @@ module memwb_pipeline_register_testbench ();
         .REG_W_En_M(REG_W_En_M),
         .Result_Src_Sel_M(Result_Src_Sel_M),
         .RD_M(RD_M),
-        .MEM_Out_M(MEM_Out_M),
+        .Data_Out_Ext_M(MEM_Out_M),
         .ALU_Out_M(ALU_Out_M),
         .PC_Plus_4_M(PC_Plus_4_M),
 
@@ -45,7 +45,7 @@ module memwb_pipeline_register_testbench ();
         .REG_W_En_W(REG_W_En_W),
         .Result_Src_Sel_W(Result_Src_Sel_W),
         .RD_W(RD_W),
-        .MEM_Out_W(MEM_Out_W),
+        .Data_Out_Ext_W(MEM_Out_W),
         .ALU_Out_W(ALU_Out_W),
         .PC_Plus_4_W(PC_Plus_4_W)
     );
@@ -95,8 +95,8 @@ module memwb_pipeline_register_testbench ();
             $sampled($past(REG_W_En_M)), $sampled(REG_W_En_W));
 
     assertRegisterPassesOther: assert property (@(posedge CLK)
-        ((RST == 0) |-> ##1 (Result_Src_Sel_W == $past(Result_Src_Sel_M) && RD_W == $past(RD_M) && MEM_Out_W == $past(MEM_Out_M) && ALU_Out_W == $past(ALU_Out_M) && PC_Plus_4_W == $past(PC_Plus_4_M))))
+        ((RST == 0) |-> ##1 (Result_Src_Sel_W == $past(Result_Src_Sel_M) && RD_W == $past(RD_M) && MEM_Out_W == MEM_Out_M && ALU_Out_W == $past(ALU_Out_M) && PC_Plus_4_W == $past(PC_Plus_4_M))))
         else $error("Error: Register did not pass data correctly, expected Result_Src_Sel_W %h RD_W %h MEM_Out_W %h ALU_Out_W %h PC_Plus_4_W %h but got Result_Src_Sel_W %h RD_W %h MEM_Out_W %h ALU_Out_W %h PC_Plus_4_W %h", 
-            $sampled($past(Result_Src_Sel_M)), $sampled($past(RD_M)), $sampled($past(MEM_Out_M)), $sampled($past(ALU_Out_M)), $sampled($past(PC_Plus_4_M)),
+            $sampled($past(Result_Src_Sel_M)), $sampled($past(RD_M)), $sampled(MEM_Out_M), $sampled($past(ALU_Out_M)), $sampled($past(PC_Plus_4_M)),
             $sampled(Result_Src_Sel_W), $sampled(RD_W), $sampled(MEM_Out_W), $sampled(ALU_Out_W), $sampled(PC_Plus_4_W)); 
 endmodule

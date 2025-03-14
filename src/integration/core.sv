@@ -222,8 +222,8 @@ module core (
         .MEM_W_En_M(MEM_W_En_M),
         .MEM_Control_M(MEM_Control_M),
         .SrcB_Reg_M(SrcB_Reg_M),
-        .ALU_Out_M(ALU_Out_M),
-        .PC_F(PC_F), // PC address to fetch instructions
+        .ALU_Out_M(ALU_Out_M[11:0]),
+        .PC_F(PC_F[11:2]), // PC address to fetch instructions
         .Flush_D(Flush_D), // Hazard control
         .Stall_En(Stall_En),
         // ------------------------------

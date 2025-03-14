@@ -10,42 +10,50 @@
 import definitions::*;
 
 module memwb_register (
-    // Global control signals
+    /*========================*/
+    //     Input Signals      //
+
+    // Global control signals //
     input wire CLK, RST,
 
-    // Control unit signals  
+    //  Control unit signals  //
     input wire REG_W_En_M,
     input wire [1:0] Result_Src_Sel_M,
 
-    // Register data
+    //      Register data     //
     input wire [4:0] RD_M,
 
-    // Data memory
+    //       Data memory      //
     input wire [31:0] Data_Out_Ext_M,
 
-    // ALU output
+    //       ALU output       //
     input wire [31:0] ALU_Out_M,
 
-    // PC
+    //           PC           //
     input wire [31:0] PC_Plus_4_M,
 
-    // -----------------------------------------------------------
+    /*========================*/
+    /*||||||||||||||||||||||||*/
+    /*========================*/
+    //     Output Signals     //
     
-    // Control unit signals
+    //  Control unit signals  //
     output logic REG_W_En_W,
     output logic [1:0] Result_Src_Sel_W,
 
-    // Register data
+    //      Register data     //
     output logic [4:0] RD_W,
 
-    // Data memory
+    //       Data memory      //
     output logic [31:0] Data_Out_Ext_W,
 
-    // ALU output
+    //        ALU output      //
     output logic [31:0] ALU_Out_W,
 
-    // PC
+    //           PC           //
     output logic [31:0] PC_Plus_4_W
+
+    /*========================*/
     );
 
     always_ff @ (posedge CLK) begin // Synchronous reset 

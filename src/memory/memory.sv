@@ -20,20 +20,20 @@ module memory (
     // Global Control Signals //
     input wire CLK, RST,
 
-    // Control unit signals
+    //  Control unit signals  //
     input wire MEM_W_En_M,
     input wire [2:0] MEM_Control_M,
 
-    // Register data
+    //     Register data      //
     input wire [31:0] SrcB_Reg_M,
 
-    // ALU output
+    //       ALU output       //
     input wire [11:0] ALU_Out_M,
 
-    // PC from fetch stage
+    //   PC from fetch stage  //
     input wire [11:2] PC_F,
 
-    // Hazard control signals so that instruction fetch can be stalled or flushed
+    // Hazard control signals //
     input wire Flush_D, Stall_En,
 
     /*========================*/
@@ -41,10 +41,10 @@ module memory (
     /*========================*/
     //     Output Signals     //
     
-    // Data reads
+    //       Data reads       //
     output wire [31:0] Data_Out_Ext_M,
 
-    // Instruction fetches
+    //   Instruction fetches  //
     output logic [31:0] Instr_D
 
     /*========================*/
@@ -57,7 +57,7 @@ module memory (
         .MEM_Control(MEM_Control_M),
         .RW_Addr(ALU_Out_M),
         .PC_Addr(PC_F),
-        .W_Data(SrcB_Reg_M),
+        .SrcB_Reg_M(SrcB_Reg_M),
         .Instr(Instr_D),
         .R_Data(Data_Out_Ext_M),
         .Flush_D(Flush_D),
@@ -69,7 +69,7 @@ module unified_memory (
     input wire CLK, RST, Flush_D, Stall_En, MEM_W_En,
     input wire [2:0] MEM_Control,
     input wire [11:0] RW_Addr, 
-    input wire [31:0] W_Data,
+    input wire [31:0] SrcB_Reg_M,
     input wire [11:2] PC_Addr,
     output wire [31:0] Instr,
     output logic [31:0] R_Data
@@ -84,6 +84,7 @@ module unified_memory (
     logic [2:0] MEM_Control_Reg; // Hold the MEM_Control signal for data selection which must occur after the read (1cycle)
     logic [31:0] Instr_Reg; // Hold the instruction in case of stall
     logic Flush_Reg, Stall_Reg, RST_Reg; // Delay signals 
+    logic [31:0] W_Data; // Data to write to memory
 
     assign MEM_W_En0 = MEM_W_En && ((MEM_Control == MEM_BYTE && RW_Addr[1:0] == 2'b00) || 
                                     (MEM_Control == MEM_HALFWORD && RW_Addr[1] == 1'b0) || 
@@ -134,6 +135,25 @@ module unified_memory (
         .dinB(W_Data),                  // Not really used but kept for the template structure, won't be enabled anyway
         .doutB(Instr_Temp)              // Instruction fetch
     );
+
+    always_comb begin // Move data to correct position for write
+        case (MEM_Control) // Use current cycle version of this signal unlike below 
+            MEM_BYTE: 
+                case (RW_Addr[1:0])
+                    2'b00: W_Data = SrcB_Reg_M; 
+                    2'b01: W_Data = {16'b0, SrcB_Reg_M[7:0], 8'b0};
+                    2'b10: W_Data = {8'b0, SrcB_Reg_M[7:0], 16'b0};
+                    default: W_Data = {SrcB_Reg_M[7:0], 24'b0};
+                endcase
+            MEM_HALFWORD: 
+                case (RW_Addr[1])
+                    1'b0: W_Data = SrcB_Reg_M;
+                    default: W_Data = {SrcB_Reg_M[15:0], 16'b0};
+                endcase
+            MEM_WORD: W_Data = SrcB_Reg_M; // Don't need to alter word
+            default: W_Data = 32'b0;
+        endcase
+    end
 
     always_comb begin
         case (MEM_Control_Reg)

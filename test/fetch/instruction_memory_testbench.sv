@@ -3,7 +3,7 @@
 // File: Instruction Memory Testbench                                                   
 // Description: This is a testbench to ensure that the instruction memory loads and fetches instructions correctly.
 // Author: Luke Shepherd                                                     
-// Date Modified: February 2025                                                                                                                                                                                                                                                       
+// Date Modified: March 2025                                                                                                                                                                                                                                                       
 //////////////////////////////////////////////////////////////////////////////////
 
 import definitions::*;
@@ -29,13 +29,13 @@ module instruction_memory_testbench;
         .W_Data(W_Data)
     );
 
-    logic [31:0] Reference [0:1023]; // Memory to compare against
+    logic [31:0] Reference [1023:0]; // Memory to compare against
 
     initial CLK <= 1; // Initialize the clock
     always #(CLOCK_PERIOD / 2) CLK <= ~CLK; // Generate the clock
 
     initial begin
-        $readmemh("src/test.hex", Reference); // Load the file to check with
+        $readmemh("/home/s53512ls/git/RV32i-Processor/src/test.hex", Reference); // Load the file to check with
         Stall <= 0;
         Flush <= 0;
         RST <= 0; 
