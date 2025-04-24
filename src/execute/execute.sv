@@ -96,7 +96,7 @@ module execute (
     mux2_1 mux2_1_branch (
         .SEL(Branch_Src_Sel_E),
         .A(PC_E), 
-        .B(REG_R_Data1_E),
+        .B(SrcA_Reg),
         .OUT(Branch_Src)
     );
 
