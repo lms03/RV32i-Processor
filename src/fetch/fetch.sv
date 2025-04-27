@@ -139,14 +139,14 @@ module branch_predictor (
             case (current_state)
                 STRONGLY_UNTAKEN: 
                     if (Predict_Taken == Branch_Taken) // If prediction correct
-                        next_state = WEAKLY_UNTAKEN;
-                    else
                         next_state = STRONGLY_UNTAKEN;
+                    else
+                        next_state = WEAKLY_UNTAKEN;
                 WEAKLY_UNTAKEN: // These two cases could use +- but this is more readable
                     if (Predict_Taken == Branch_Taken) 
-                        next_state = WEAKLY_TAKEN;
-                    else
                         next_state = STRONGLY_UNTAKEN;
+                    else
+                        next_state = WEAKLY_TAKEN;
                 WEAKLY_TAKEN:
                     if (Predict_Taken == Branch_Taken)
                         next_state = STRONGLY_TAKEN;
